@@ -1,0 +1,160 @@
+{
+  "company": {
+    "name": "Orbit Engineering Solutions",
+    "website": "https://orbitsolutions.tn",
+    "location": "ISTIC Incubator, Borj Cédria Technopole, Hammam Chatt 1164, Tunis, Tunisia",
+    "phone": "+216 36 086 006",
+    "email": "support@orbitsolutions.tn",
+    "tagline": "The AI Operating System for Industrial Performance",
+    "description": "Orbit builds the digital nervous system of industry: IoT digital twins, predictive OEE analytics, energy management and ESG carbon monitoring for factories across MENA.",
+    "region": "MENA (Middle East & North Africa)",
+    "model": "Software + Hardware integration (vendor-independent platform)"
+  },
+
+  "key_stats": {
+    "industrial_sites": "60+",
+    "connected_devices": "4,300+",
+    "processed_data_points": "5B+",
+    "average_energy_reduction": "28%",
+    "oee_improvement": "12%",
+    "downtime_reduction": "14%",
+    "co2_reduced": "148+ Tons"
+  },
+
+  "modules": [
+    {
+      "id": "ems",
+      "name": "Orbit Energy Intelligence (EMS)",
+      "category": "Energy Management",
+      "description": "Optimize industrial energy consumption, utilities, and power quality using real-time operational analytics and AI-driven recommendations.",
+      "url": "https://orbitsolutions.tn/ems"
+    },
+    {
+      "id": "esg",
+      "name": "Orbit ESG Intelligence",
+      "category": "Sustainability",
+      "description": "Automate carbon footprint monitoring, ESG analytics, sustainability reporting, and environmental performance optimization (Scope 1/2/3 carbon accounting).",
+      "url": "https://orbitsolutions.tn/esg"
+    },
+    {
+      "id": "smart-factory",
+      "name": "Manufacturing Intelligence (Smart Factory)",
+      "category": "Production",
+      "description": "Monitor OEE, production efficiency, downtime, and manufacturing operations through real-time industrial visibility.",
+      "url": "https://orbitsolutions.tn/smart-factory"
+    },
+    {
+      "id": "predictive-maintenance",
+      "name": "Predictive Maintenance AI",
+      "category": "Maintenance",
+      "description": "Monitor machine health and predict equipment failures using vibration analytics, AI diagnostics, and operational intelligence.",
+      "url": "https://orbitsolutions.tn/predictive-maintenance"
+    },
+    {
+      "id": "iot",
+      "name": "Orbit Edge AI Gateway",
+      "category": "Connectivity",
+      "description": "Secure industrial edge layer enabling local AI processing, telemetry acquisition, and multi-protocol connectivity (Modbus, OPC-UA, MQTT, BACnet).",
+      "url": "https://orbitsolutions.tn/iot"
+    },
+    {
+      "id": "multisite",
+      "name": "Multi-site Hub",
+      "category": "Supervision",
+      "description": "Consolidate and benchmark metrics across global/multi-factory operations in a unified supervisor dashboard.",
+      "url": "https://orbitsolutions.tn/multisite"
+    },
+    {
+      "id": "ai-engineer",
+      "name": "Orbit AI Copilot (AI Engineer)",
+      "category": "AI Assistant",
+      "description": "Industrial AI chatbot copilot delivering anomaly detection, predictive insights, KPI interpretation, root-cause diagnostics and operational recommendations.",
+      "url": "https://orbitsolutions.tn/ai-engineer"
+    }
+  ],
+
+  "ai_agents_suite": [
+    { "name": "AI Energy", "url": "https://orbitsolutions.tn/ai-energy" },
+    { "name": "AI Carbon", "url": "https://orbitsolutions.tn/ai-carbon" },
+    { "name": "AI Maintenance", "url": "https://orbitsolutions.tn/ai-maintenance" },
+    { "name": "AI Manufacturing", "url": "https://orbitsolutions.tn/ai-manufacturing" },
+    { "name": "AI Process", "url": "https://orbitsolutions.tn/ai-process" },
+    { "name": "AI Power Quality", "url": "https://orbitsolutions.tn/ai-power-quality" },
+    { "name": "AI Simulation", "url": "https://orbitsolutions.tn/ai-simulation" },
+    { "name": "AI Reporting", "url": "https://orbitsolutions.tn/ai-reporting" }
+  ],
+
+  "engineering_services": [
+    {
+      "name": "Energy Audits",
+      "description": "Regulatory energy scans to optimize operational efficiency."
+    },
+    {
+      "name": "Smart Metering",
+      "description": "Precision sub-metering grids for steam, water, and power."
+    },
+    {
+      "name": "Industrial IoT Integration",
+      "description": "Deploying Edge gateways with active local telemetry nodes."
+    },
+    {
+      "name": "PLC & SCADA Integration",
+      "description": "Connecting legacy PLCs and SCADA networks to AI cores."
+    },
+    {
+      "name": "ESG Consulting",
+      "description": "Scopes 1/2/3 carbon accounting and offset auditing."
+    }
+  ],
+
+  "supported_hardware": {
+    "device_types": [
+      "Energy Meters", "Flow Meters", "Sensors (vibration, pressure)",
+      "PLCs", "Power Analyzers", "SCADA Systems", "HVAC Controllers", "Databases"
+    ],
+    "protocols": ["Modbus", "OPC-UA", "MQTT", "BACnet"],
+    "vendor_count": "200+ industrial hardware integrations across 40+ global vendors",
+    "example_vendors": [
+      "Siemens", "Schneider Electric", "Janitza", "ABB",
+      "Huawei", "Atlas Copco", "Circutor", "Carlo Gavazzi"
+    ]
+  },
+
+  "certifications_standards": [
+    "ISO 50001",
+    "IEC 62443",
+    "IEEE 519 (Power Quality / THD compliance)",
+    "TLS 1.3 secure data tunnels"
+  ],
+
+  "key_differentiators": [
+    "Vendor-independent architecture: connects to any instrumentation hardware and utility meter, no vendor lock-in",
+    "Retrofit-ready for legacy factories: integrates with existing PLC cabinets and instrumentation",
+    "Unified AI + EMS + MES + ESG platform: eliminates split software silos",
+    "Rapid deployment: pre-templated module blueprints for full implementation within weeks",
+    "Edge + Cloud hybrid intelligence: sub-second local edge acquisition + centralized cloud predictive audits",
+    "Real-time industrial telemetry via direct Modbus and OPC-UA observers",
+    "Multi-site monitoring: consolidate and benchmark global operations in one supervisor",
+    "ISO 50001 aligned methodologies with automated compliance tracking",
+    "15+ years of engineering expertise in thermal processes, electrical grid safety, and machine automation",
+    "Tunisian engineering team complying with international standards"
+  ],
+
+  "reference_clients_by_sector": {
+    "Food & Agro-Industry": ["Diari (Milling & Pasta)", "Warda (Premium Pasta)", "L'Epi d'Or (Flour & Milling)", "Spiga (Food Processing)", "Mliha (Agri & Poultry)", "Abida", "Sotuchoc (Confectionery)"],
+    "Dairy & Beverages": ["Délice", "Délice Danone", "Danone", "Délice Eau", "SBT", "SFBT", "Cap d'Or (Cheese & Dairy)", "La Compagnie Fromagère"],
+    "Cold Storage & Packaging": ["ACN (Cold storage)", "Biopak (Packaging & Print)"],
+    "Automotive": ["Visteon", "Draxlmaier"],
+    "Telecom & Tech": ["Ooredoo", "Sagemcom", "Cogemco"],
+    "Energy & Utilities": ["Vivo Energy", "Sudgaz"],
+    "Other": ["BIC (Writing Instruments)", "UIB (Banking)", "Caveo (Industrial Safety)", "GSS (Security)", "Pristine (Industrial Hygiene)", "ENIT (Academic Research)"]
+  },
+
+  "contact_channels": {
+    "demo_request": "https://orbitsolutions.tn/contact",
+    "audit_request": "https://orbitsolutions.tn/contact?type=audit",
+    "client_portal": "https://orbitsolutions.tn/portal/login",
+    "documentation": "https://orbitsolutions.tn/documentation",
+    "support": "https://orbitsolutions.tn/support"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "faq": [
+    {
+      "question": "Combien coûte la solution Orbit ?",
+      "answer": "Le prix dépend du nombre de sites, de capteurs/meters à connecter, et des modules choisis (EMS, ESG, Predictive Maintenance...). Chaque projet est différent, donc nous préparons un devis personnalisé après un premier échange sur vos besoins. Souhaitez-vous qu'on prépare une estimation ?"
+    },
+    {
+      "question": "Combien de temps prend l'installation/déploiement ?",
+      "answer": "Grâce à nos modules pré-templatés, un déploiement type prend généralement quelques semaines (et non des mois), selon la complexité du site et le nombre d'équipements à connecter."
+    },
+    {
+      "question": "Est-ce qu'on doit remplacer notre matériel existant ?",
+      "answer": "Non. Orbit est une architecture vendor-independent, compatible avec la plupart des compteurs, capteurs, PLC et systèmes SCADA déjà en place (Siemens, Schneider Electric, ABB, etc.). C'est conçu pour du retrofit, pas un remplacement."
+    },
+    {
+      "question": "Quels protocoles/équipements sont supportés ?",
+      "answer": "Orbit supporte Modbus, OPC-UA, MQTT et BACnet, et s'intègre avec plus de 200 équipements industriels chez 40+ fournisseurs (Siemens, Schneider Electric, Janitza, ABB, Huawei, Atlas Copco, Circutor, Carlo Gavazzi...)."
+    },
+    {
+      "question": "Est-ce que mes données sont sécurisées ?",
+      "answer": "Oui. Orbit utilise des tunnels sécurisés TLS 1.3, une architecture conforme IEC 62443, avec traitement local (Edge) avant synchronisation cloud chiffrée."
+    },
+    {
+      "question": "Proposez-vous un essai ou une démo ?",
+      "answer": "Oui, vous pouvez demander une démo directement via https://orbitsolutions.tn/contact. Pour un diagnostic plus poussé, nous proposons aussi un audit énergétique initial."
+    },
+    {
+      "question": "Travaillez-vous avec des entreprises hors Tunisie ?",
+      "answer": "Orbit opère principalement dans la région MENA (Moyen-Orient et Afrique du Nord), avec 60+ sites industriels déployés. Précisez votre pays et on confirmera la faisabilité."
+    },
+    {
+      "question": "Quelle est la différence entre EMS et ESG Intelligence ?",
+      "answer": "EMS (Energy Intelligence) se concentre sur le suivi et l'optimisation de la consommation énergétique en temps réel. ESG Intelligence se concentre sur le bilan carbone et le reporting de durabilité (Scope 1/2/3). Beaucoup de clients utilisent les deux ensemble."
+    },
+    {
+      "question": "Est-ce qu'Orbit est certifié / conforme aux normes ?",
+      "answer": "Oui, Orbit s'aligne sur les standards ISO 50001 (management de l'énergie), IEC 62443 (cybersécurité industrielle), et IEEE 519 (qualité de l'énergie / THD)."
+    },
+    {
+      "question": "Avez-vous des références clients dans mon secteur ?",
+      "answer": "Orbit travaille avec 60+ sites industriels dans des secteurs variés : agroalimentaire (Délice, Danone, SFBT), automobile (Visteon, Draxlmaier), télécom (Ooredoo, Sagemcom), énergie (Vivo Energy) et plus. Précisez votre secteur, je peux vous donner des références pertinentes."
+    }
+  ],
+
+  "objection_handling": [
+    {
+      "objection": "C'est trop cher / on n'a pas le budget",
+      "response": "Je comprends. Beaucoup de nos clients ont en fait financé le projet grâce aux économies générées : nos clients observent en moyenne 28% de réduction des coûts énergétiques, ce qui rembourse souvent l'investissement en quelques mois. Voulez-vous qu'on évalue le ROI potentiel pour votre site ?"
+    },
+    {
+      "objection": "On a déjà un système SCADA / de monitoring",
+      "response": "Parfait, justement Orbit n'est pas conçu pour remplacer votre SCADA, mais pour s'y connecter et ajouter une couche d'intelligence IA (analyses prédictives, alertes, reporting ESG) par-dessus votre infrastructure existante via Modbus/OPC-UA."
+    },
+    {
+      "objection": "On n'a pas le temps / les ressources pour un déploiement",
+      "response": "C'est une préoccupation fréquente. Nos modules sont pré-templatés justement pour réduire le temps de déploiement à quelques semaines, avec un accompagnement de notre équipe d'ingénierie de bout en bout — vous n'avez pas besoin de ressources internes dédiées."
+    },
+    {
+      "objection": "Je ne suis pas sûr que ça marche pour notre secteur",
+      "response": "Orbit a été déployé dans des secteurs très variés (agroalimentaire, automobile, textile, télécom, énergie...). Quel est votre secteur exactement ? Je peux vous citer des cas similaires."
+    },
+    {
+      "objection": "On veut juste un devis rapide, pas une démo",
+      "response": "Compris. Pour préparer un devis précis, j'ai besoin de quelques informations : nombre de sites, nombre de compteurs/capteurs, secteur d'activité, et le ou les modules qui vous intéressent (énergie, maintenance prédictive, ESG...). Pouvez-vous me les communiquer ?"
+    },
+    {
+      "objection": "On a déjà été déçu par un autre fournisseur IoT/énergie",
+      "response": "Je comprends cette prudence. Orbit a 15+ ans d'expertise en ingénierie (process thermiques, sécurité électrique, automatisation), pas seulement en logiciel — et nous avons des références vérifiables sur 60+ sites. Souhaitez-vous voir un cas client dans un secteur proche du vôtre ?"
+    }
+  ]
+}

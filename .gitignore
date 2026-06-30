@@ -1,0 +1,16 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Secrets
+config/credentials.json
+config/credentials..json
+config/token.json
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/

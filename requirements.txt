@@ -1,0 +1,1 @@
+pip install ollama langchain langchain-community pyyaml requests python-dotenv

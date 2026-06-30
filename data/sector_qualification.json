@@ -1,0 +1,93 @@
+{
+  "sector_qualification_scenarios": [
+    {
+      "sector": "Agroalimentaire / Agro-industrie",
+      "keywords": ["agro", "food", "alimentaire", "minoterie", "pâtes", "farine", "laiterie", "produits laitiers"],
+      "typical_concerns": ["Consommation énergétique des fours/séchoirs", "Maîtrise des coûts utilities (vapeur, eau, électricité)", "Traçabilité ESG pour export", "Maintenance des lignes de production"],
+      "priority_modules": ["ems", "esg", "smart-factory"],
+      "qualification_questions": [
+        "Combien de lignes de production ou d'ateliers souhaitez-vous monitorer ?",
+        "Utilisez-vous beaucoup de vapeur, d'eau ou de gaz dans vos process (four, séchage, pasteurisation) ?",
+        "Avez-vous des exigences de reporting ESG pour l'export ou des certifications clients ?",
+        "Quel est votre principal défi actuel : coût énergétique, arrêts de production, ou conformité ?"
+      ],
+      "reference_clients": ["Délice", "Danone", "Diari", "Warda", "L'Epi d'Or", "Spiga", "Mliha", "Sotuchoc"]
+    },
+    {
+      "sector": "Automobile / Équipementier automobile",
+      "keywords": ["automobile", "automotive", "câblage", "pièces auto", "équipementier"],
+      "typical_concerns": ["Disponibilité machine (OEE)", "Maintenance prédictive sur lignes critiques", "Conformité énergétique pour donneurs d'ordre internationaux"],
+      "priority_modules": ["smart-factory", "predictive-maintenance", "ems"],
+      "qualification_questions": [
+        "Combien de lignes ou machines critiques souhaitez-vous surveiller ?",
+        "Avez-vous déjà des arrêts non planifiés qui impactent votre OEE ?",
+        "Vos donneurs d'ordre exigent-ils des rapports énergie/carbone (ex: normes IATF, ISO 50001) ?",
+        "Quel est le niveau d'automatisation actuel de vos lignes (PLC, SCADA existant) ?"
+      ],
+      "reference_clients": ["Visteon", "Draxlmaier"]
+    },
+    {
+      "sector": "Télécom / Électronique",
+      "keywords": ["télécom", "telecom", "électronique", "réseaux", "datacenter"],
+      "typical_concerns": ["Consommation énergétique des infrastructures", "Disponibilité des équipements 24/7", "Monitoring multi-sites distants"],
+      "priority_modules": ["ems", "multisite", "predictive-maintenance"],
+      "qualification_questions": [
+        "Combien de sites ou stations techniques souhaitez-vous superviser ?",
+        "Sont-ils géographiquement dispersés (besoin de supervision centralisée) ?",
+        "Avez-vous des contraintes de continuité de service (uptime critique) ?",
+        "Quel est l'état de votre infrastructure de monitoring actuelle ?"
+      ],
+      "reference_clients": ["Ooredoo", "Sagemcom", "Cogemco"]
+    },
+    {
+      "sector": "Énergie / Utilities",
+      "keywords": ["énergie", "gaz", "électricité", "utilities", "distribution"],
+      "typical_concerns": ["Qualité de puissance / conformité réseau", "Optimisation de la distribution", "Conformité réglementaire"],
+      "priority_modules": ["ems", "iot", "esg"],
+      "qualification_questions": [
+        "Quel est votre périmètre : production, distribution, ou consommation d'énergie ?",
+        "Avez-vous des problématiques de qualité de puissance (THD, facteur de puissance) ?",
+        "Combien de points de mesure souhaitez-vous intégrer ?",
+        "Avez-vous des obligations réglementaires spécifiques à respecter ?"
+      ],
+      "reference_clients": ["Vivo Energy", "Sudgaz"]
+    },
+    {
+      "sector": "Industrie générale / Manufacturing divers",
+      "keywords": ["usine", "manufacturing", "production", "industrie", "fabrication"],
+      "typical_concerns": ["Coûts énergétiques", "Pannes machines imprévues", "Manque de visibilité sur les KPI de production"],
+      "priority_modules": ["ems", "smart-factory", "predictive-maintenance"],
+      "qualification_questions": [
+        "Combien de sites ou usines avez-vous ?",
+        "Avez-vous déjà des compteurs ou capteurs installés, ou faut-il tout équiper ?",
+        "Quel est votre plus gros point de douleur actuel : énergie, maintenance, ou production ?",
+        "Quel système de contrôle utilisez-vous actuellement (SCADA, PLC, aucun) ?"
+      ],
+      "reference_clients": ["BIC", "Biopak", "Caveo", "ACN"]
+    },
+    {
+      "sector": "Banque / Tertiaire / Services",
+      "keywords": ["banque", "bureau", "tertiaire", "bâtiment", "siège social"],
+      "typical_concerns": ["Consommation énergétique des bâtiments", "Coûts de climatisation/HVAC", "Reporting ESG/RSE"],
+      "priority_modules": ["ems", "esg"],
+      "qualification_questions": [
+        "Combien de bâtiments ou sites tertiaires souhaitez-vous monitorer ?",
+        "Le HVAC représente-t-il une part importante de votre consommation ?",
+        "Avez-vous des objectifs RSE ou ESG à atteindre ?",
+        "Quel est votre horizon pour ce projet ?"
+      ],
+      "reference_clients": ["UIB"]
+    }
+  ],
+
+  "general_qualification_fallback": {
+    "description": "À utiliser si le secteur du prospect n'est pas identifié ou ne correspond à aucun scénario ci-dessus.",
+    "questions": [
+      "Quel est votre secteur d'activité ?",
+      "Combien de sites/usines souhaitez-vous équiper ?",
+      "Quel est votre principal besoin : énergie, maintenance prédictive, production (OEE), ou ESG/carbone ?",
+      "Avez-vous déjà des équipements de mesure (compteurs, capteurs) installés ?",
+      "Dans quel pays se situent vos installations ?"
+    ]
+  }
+}
