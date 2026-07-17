@@ -1,99 +1,174 @@
-import ollama
-import yaml
 import json
+from agents.base_agent import BaseAgent
 import re
-# Charger la config
-with open("config/llm.yaml", "r", encoding="utf-8") as f:
-    config = yaml.safe_load(f)
+ORBIT_JARGON_TERMS = [
+    r"\bEMS\b", r"\bOEE\b", r"\bESG\b", r"\bSCADA\b", r"\bPLC\b", r"\bMES\b",
+    r"\bKPI(s)?\b", r"\bIoT\b", r"\bROI\b", r"\bTHD\b", r"\bISO\s?50001\b",
+    r"\bIEC\s?62443\b", r"\bModbus\b", r"\bOPC-?UA\b", r"\bMQTT\b", r"\bBACnet\b",
+    r"\bOrbit\b",
+]
+ORBIT_JARGON_REGEX = re.compile("|".join(ORBIT_JARGON_TERMS), re.IGNORECASE)
 
-with open("prompts/commercial.txt", "r", encoding="utf-8") as f:
-    system_prompt = f.read()
+HARD_OFF_TOPIC_PATTERNS = [
+    r"\bexam(e|s|en)?\b",
+    r"\bhomework\b",
+    r"\bdevoir(s)?\b",
+    r"\bweather\b|\bmétéo\b|\bmeteo\b",
+    r"\brecipe\b|\bcuisine\b|\bcook(ing)?\b|\bpizza\b",
+    r"\bjoke\b|\bblague\b",
+    r"\btaylor series\b|\byoung'?s modulus\b",
+    r"\bfootball\b|\bmovie\b|\bfilm\b|\bmusic\b|\bsong\b",
+]
+HARD_OFF_TOPIC_REGEX = re.compile("|".join(HARD_OFF_TOPIC_PATTERNS), re.IGNORECASE)
 
-with open("data/faq_objections.json", "r") as f:
-    faq_data = json.load(f)
+OFF_TOPIC_REFUSAL = (
+    "Sorry, I am the Orbit AI Assistant and I can only answer questions related to "
+    "Orbit products, Industry 4.0, Energy Management and Industrial IoT."
+)
 
-with open("data/sector_qualification.json", "r") as f:
-    sector_data = json.load(f)
+TOPIC_CLASSIFIER_PROMPT = """You are a strict topic classifier for a B2B industrial sales assistant.
 
-def clean_response(text: str) -> str:
-    """
-    Filet de sécurité : nettoie la réponse même si le modèle
-    ignore les règles de formatage du prompt.
-    """
-    # Supprimer les headers markdown (##, ###, etc.)
-    text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)
+The assistant (Orbit AI) may ONLY discuss: Energy Management, Industry 4.0, Industrial IoT,
+Predictive Maintenance, ESG/Carbon reporting, Manufacturing KPIs/SCADA, or commercial questions
+about Orbit Engineering Solutions (products, pricing, demos, sectors, capabilities).
 
-    # Supprimer les lignes de tableau markdown (| ... | ... |)
-    text = re.sub(r'^\|.*\|$', '', text, flags=re.MULTILINE)
+It must NOT discuss: school/exam/homework help (even with technical vocabulary like
+"Young's modulus" or "Taylor series"), general trivia (weather, recipes, etc.), personal
+advice, politics, religion, or anything unrelated to an industrial customer's business need.
 
-    # Supprimer les séparateurs de tableau (|---|---|)
-    text = re.sub(r'^[\|\-\s:]+$', '', text, flags=re.MULTILINE)
+IMPORTANT: Judge ONLY the latest user message on its own merit. Do not let the tone or
+topic of earlier messages in the conversation bias your judgment of this new message —
+each message must be classified independently, even if previous messages were off-topic.
 
-    # Supprimer les lignes horizontales (---, ___, ***)
-    text = re.sub(r'^[\-_\*]{3,}$', '', text, flags=re.MULTILINE)
+IMPORTANT: Generic-sounding commercial questions are IN_SCOPE by default, even without the
+word "Orbit" in them, since this is a conversation with Orbit's sales assistant. Examples of
+messages that MUST be classified in_scope: true:
+- "What is the product you offer?" (in_scope: true — asking about Orbit's offering)
+- "How much does it cost?" / "How much does Orbit cost?" (in_scope: true — pricing question)
+- "What do you offer in your industry?" (in_scope: true)
+- "Can you tell me more?" (in_scope: true — follow-up, assume it continues the commercial topic)
 
-    # Supprimer les emojis (plage Unicode large)
-    emoji_pattern = re.compile(
-        "["
-        "\U0001F300-\U0001FAFF"
-        "\U00002600-\U000027BF"
-        "\U0001F1E0-\U0001F1FF"
-        "]+",
-        flags=re.UNICODE
-    )
-    text = emoji_pattern.sub('', text)
+IMPORTANT: If the latest message looks like a natural follow-up to an ongoing
+Orbit conversation (asking to clarify an acronym, asking "how does that work",
+asking what tools/technology are used, asking for more detail, even with typos
+or broken English/French grammar), classify it as in_scope: true. Only classify
+as off-topic when the message clearly introduces a NEW unrelated subject
+(school, cooking, weather, entertainment, personal life) with no plausible link
+to the conversation.
 
-    # Supprimer le gras markdown excessif (**texte**) -> texte simple
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+When genuinely uncertain, prefer in_scope: true — it is worse to block a real customer than
+to let one borderline message through.
 
-    # Supprimer les lignes vides multiples consécutives
-    text = re.sub(r'\n{3,}', '\n\n', text)
+Recent user-only conversation context (for detecting topic drift across turns):
+{history}
+CRITICAL: If the assistant's last message asked a qualification question (e.g. about sites,
+sensors, sector, protocols, needs), a short factual answer like a number, a protocol name, or
+a brief data point (e.g. "8 factories", "500 sensors", "MQTT") is a legitimate in-scope reply
+to that question — classify it in_scope: true, even though it has no keywords on its own.
+Latest user message: "{message}"
 
-    # Supprimer les espaces en début/fin de ligne
-    text = '\n'.join(line.strip() for line in text.split('\n'))
+Respond with ONLY this JSON, nothing else:
+{{"in_scope": true or false, "reason": "one short sentence"}}
+"""
 
-    return text.strip()
+class CommercialAgent(BaseAgent):
+    max_tokens = 250
+    def __init__(self, config_path="config/llm.yaml"):
+        with open("prompts/commercial.txt", "r", encoding="utf-8") as f:
+            self.system_prompt = f.read()
 
+        super().__init__(config_path)
 
-def commercial_agent(user_message: str, history: list = []):
-    """Commercial Agent - Orbit AI Assistant"""
+        with open("data/faq_objections.json", "r", encoding="utf-8") as f:
+            self.faq_data = json.load(f)
 
-    messages = [{"role": "system", "content": system_prompt}]
-    messages += history
-    messages.append({"role": "user", "content": user_message})
+        with open("data/sector_qualification.json", "r", encoding="utf-8") as f:
+            self.sector_data = json.load(f)
+    @staticmethod
+    def _matches_jargon_allowlist(message: str) -> bool:
+        return bool(ORBIT_JARGON_REGEX.search(message))
 
-    response = ollama.chat(
-        model=config["model"]["name"],
-        messages=messages,
-        options={
-            "temperature": config["parameters"]["temperature"],
-            "top_p": config["parameters"]["top_p"],
-            "top_k": config["parameters"]["top_k"],
-            "repeat_penalty": config["parameters"]["repeat_penalty"],
-            "num_predict": config["parameters"]["max_tokens"],
-        }
-    )
+    @staticmethod
+    def _matches_hard_blocklist(message: str) -> bool:
+        return bool(HARD_OFF_TOPIC_REGEX.search(message))
 
-    raw_text = response["message"]["content"]
-    cleaned_text = clean_response(raw_text)
+    def _is_in_scope(self, user_message: str, history: list) -> bool:
+        if self._matches_jargon_allowlist(user_message):
+            return True
 
-    return cleaned_text
+        if self._matches_hard_blocklist(user_message):
+            return False
 
+        # On inclut la DERNIÈRE question de l'assistant, pas seulement
+        # l'historique utilisateur : sans elle, une réponse courte comme
+        # "8 factories" ou "500 sensors" n'a aucun contexte pour être
+        # reconnue comme une réponse légitime à une question de
+        # qualification commerciale — elle ressemble à une phrase isolée
+        # et absurde vue seule.
+        last_assistant_message = next(
+            (m["content"] for m in reversed(history or []) if m.get("role") == "assistant"),
+            None
+        )
 
-# TEST
+        recent_user_messages = [
+            m["content"] for m in (history or [])
+            if m.get("role") == "user"
+        ][-4:]
+
+        history_text = "\n".join(f"- {msg}" for msg in recent_user_messages) or "(no prior messages)"
+
+        assistant_context = (
+            f'\nThe assistant\'s last message asked: "{last_assistant_message}"\n'
+            if last_assistant_message else ""
+        )
+
+        prompt = TOPIC_CLASSIFIER_PROMPT.format(
+            history=history_text,
+            message=user_message,
+        ) + assistant_context
+
+        raw = self.call_llm_raw(prompt, temperature=0.0, max_tokens=100)
+        result = self.parse_json_response(raw, fallback={"in_scope": True, "reason": "parse_error"})
+
+        return bool(result.get("in_scope", True))
+    def run(self, user_message: str, history: list = None) -> str:
+        history = history or []
+
+        if not self._is_in_scope(user_message, history):
+            return OFF_TOPIC_REFUSAL
+
+        raw_text = self.call_llm(
+            user_message,
+            extra_messages=history
+        )
+
+        return self.clean_text_response(raw_text)
 if __name__ == "__main__":
-    print("🤖 Orbit AI Assistant — Commercial Agent")
+
+    print("Orbit AI Assistant — Commercial Agent")
     print("=" * 50)
 
-    history = []
+    agent = CommercialAgent() # Create the agent
+
+    history = [] # Store the conversation history
+
     while True:
-        user_input = input("\nYou: ")
-        if user_input.lower() in ["exit", "quit"]:
+        user_input = input("\nYou: ") # Read user input
+
+        if user_input.lower() in ["exit", "quit"]: # Exit the conversation
             break
 
-        response = commercial_agent(user_input, history)
+        response = agent.run(user_input, history) # Generate the assistant's response
+
         print(f"\nOrbit AI: {response}")
 
-        # Sauvegarder l'historique
-        history.append({"role": "user", "content": user_input})
-        history.append({"role": "assistant", "content": response})
+        # Update the conversation history
+        history.append({
+            "role": "user",
+            "content": user_input
+        })
+
+        history.append({
+            "role": "assistant",
+            "content": response
+        })

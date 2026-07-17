@@ -7,7 +7,7 @@ __pycache__/
 config/credentials.json
 config/credentials..json
 config/token.json
-
+config/client_secret.json
 # Environment
 .env
 

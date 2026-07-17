@@ -1,6 +1,6 @@
 # config/llm.yaml
 model:
-  name: "qwen3:4b"
+  name: "qwen2.5:7b"
   provider: "ollama"
   base_url: "http://localhost:11434"
 
