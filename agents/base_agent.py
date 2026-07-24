@@ -2,6 +2,17 @@ import ollama
 import yaml
 import json
 import re
+import os
+import sys
+
+from utils.token_tracker import log_usage
+from data.rag.retriever import retrieve, build_context_block # import local: evite le cout si use_rag=False
+# Permet d'importer rag/retriever.py depuis n'importe quel agent qui
+# herite de BaseAgent, sans avoir a dupliquer le sys.path ailleurs.
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "rag"))
+
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+ollama_client = ollama.Client(host=OLLAMA_HOST)
 
 
 class BaseAgent:
@@ -13,6 +24,11 @@ class BaseAgent:
     top_k: int = None
     repeat_penalty: float = None
     max_tokens: int = None
+
+    # --- RAG (desactive par defaut, chaque agent l'active explicitement) ---
+    use_rag: bool = False
+    rag_top_k: int = 4
+    rag_type_filter: str = None  # ex: "pricing", "product", "faq", "objection", ou None = pas de filtre
 
     def __init__(self, config_path="config/llm.yaml"):
         with open(config_path, "r", encoding="utf-8") as f:
@@ -32,15 +48,47 @@ class BaseAgent:
         if self.max_tokens is None:
             self.max_tokens = self.config["parameters"].get("max_tokens", 1000)
 
-    def call_llm(self, user_content: str, extra_messages: list = None) -> str:
-        messages = [{"role": "system", "content": self.system_prompt}]
+    def get_rag_context(self, query: str, top_k: int = None, type_filter: str = None) -> str:
+        """
+        Interroge l'index FAISS (data/rag/index/) construit par rag/ingest.py
+        et retourne un bloc de texte pret a etre injecte dans le prompt.
+        Retourne "" si l'index n'existe pas encore ou si aucun resultat
+        pertinent n'est trouve (l'agent continue de fonctionner normalement
+        dans ce cas, juste sans contexte RAG).
+        """
+        
+        try:
+            results = retrieve(
+                query,
+                top_k=top_k if top_k is not None else self.rag_top_k,
+                type_filter=type_filter if type_filter is not None else self.rag_type_filter,
+            )
+        except FileNotFoundError:
+            # Index pas encore genere (python rag/ingest.py jamais lance) :
+            # on ne bloque pas l'agent, on continue sans contexte.
+            return ""
+        return build_context_block(results)
+
+    def call_llm(self, user_content: str, extra_messages: list = None, rag_query: str = None) -> str:
+        system_content = self.system_prompt
+
+        if self.use_rag:
+            # rag_query permet a un agent de chercher sur un texte different
+            # du message envoye au LLM (ex: chercher sur le sujet d'une reunion
+            # mais poser une autre question au modele). Par defaut on cherche
+            # sur user_content lui-meme.
+            context = self.get_rag_context(rag_query or user_content)
+            if context:
+                system_content = f"{system_content}\n\n{context}"
+
+        messages = [{"role": "system", "content": system_content}]
 
         if extra_messages: # Add conversation history when available.
             messages += extra_messages
         # Add the current user message.
         messages.append({"role": "user", "content": user_content})
 
-        response = ollama.chat(
+        response = ollama_client.chat(
             model=self.model_name,
             messages=messages,
             options={
@@ -52,12 +100,20 @@ class BaseAgent:
             }
         )
 
+        prompt_tokens = response.get("prompt_eval_count", 0)
+        response_tokens = response.get("eval_count", 0)
+        log_usage(
+            agent_name=self.__class__.__name__,
+            prompt_tokens=prompt_tokens,
+            response_tokens=response_tokens,
+        )
+
         return (response["message"].get("content") or "").strip()
     def call_llm_raw(self, prompt: str, temperature: float = None, max_tokens: int = None) -> str:
         """Appel LLM SANS le system_prompt métier — pour des sous-tâches
         isolées (ex: classification) qui ne doivent pas être influencées
         par le contexte commercial."""
-        response = ollama.chat(
+        response = ollama_client.chat(
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
             options={
@@ -67,6 +123,13 @@ class BaseAgent:
                 "repeat_penalty": self.repeat_penalty,
                 "num_predict": max_tokens if max_tokens is not None else self.max_tokens,
             }
+        )
+        prompt_tokens = response.get("prompt_eval_count", 0)
+        response_tokens = response.get("eval_count", 0)
+        log_usage(
+            agent_name=self.__class__.__name__,
+            prompt_tokens=prompt_tokens,
+            response_tokens=response_tokens,
         )
         return (response["message"].get("content") or "").strip()
     @staticmethod

@@ -3,7 +3,7 @@ from agents.google_auth import get_google_credentials
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta, time
 import json
-
+from utils.settings import is_debug_enabled
 
 class PlanningAgent(BaseAgent):
     """
@@ -50,15 +50,35 @@ Answer in plain text only.
     }
 
 
-    def get_calendar_service(self):
-        creds = get_google_credentials()
+    def get_calendar_service(self, email: str = None):
+        creds = get_google_credentials(email=email)
         return build("calendar", "v3", credentials=creds)
 
+    def run(self, email: str = None):
+        service = self.get_calendar_service(email=email)
+        today_events, tomorrow_events = self.get_today_and_tomorrow_events(service)
+        today_events = self.prioritize_events(today_events)
+        tomorrow_events = self.prioritize_events(tomorrow_events)
+        all_events = today_events + tomorrow_events
+        conflicts = self.detect_conflicts(all_events)
+        payload = {"today": today_events, "tomorrow": tomorrow_events, "conflicts": conflicts}
+        briefing = self.call_llm(json.dumps(payload, ensure_ascii=False))
+        return {
+            "today_events": today_events,
+            "tomorrow_events": tomorrow_events,
+            "conflicts": conflicts,
+            "briefing": briefing,
+        }
     def get_events_for_range(self, service, start_dt, end_dt, calendar_id="primary"):
+        from utils.settings import is_debug_enabled
+        time_min = start_dt.isoformat()
+        time_max = end_dt.isoformat()
+        if is_debug_enabled():
+            print(f"[DEBUG] Calendar query: {time_min} → {time_max}")
         events_result = service.events().list(
             calendarId=calendar_id,
-            timeMin=start_dt.isoformat(),
-            timeMax=end_dt.isoformat(),
+            timeMin=time_min,
+            timeMax=time_max,
             singleEvents=True,
             orderBy="startTime",
         ).execute()
@@ -83,12 +103,18 @@ Answer in plain text only.
 
     def get_today_and_tomorrow_events(self, service):
         now = datetime.now().astimezone()
-        today_start = datetime.combine(now.date(), time.min).astimezone()
-        today_end = datetime.combine(now.date(), time.max).astimezone()
-        tomorrow_start = today_start + timedelta(days=1)
-        tomorrow_end = today_end + timedelta(days=1)
+        local_tz = now.tzinfo
 
-        today_events = self.get_events_for_range(service, today_start, today_end)
+        today_start = datetime.combine(now.date(), time.min).replace(tzinfo=local_tz)
+        today_end   = datetime.combine(now.date(), time.max).replace(tzinfo=local_tz)
+        tomorrow_start = datetime.combine(
+            (now + timedelta(days=1)).date(), time.min
+        ).replace(tzinfo=local_tz)
+        tomorrow_end = datetime.combine(
+            (now + timedelta(days=1)).date(), time.max
+        ).replace(tzinfo=local_tz)
+
+        today_events    = self.get_events_for_range(service, today_start, today_end)
         tomorrow_events = self.get_events_for_range(service, tomorrow_start, tomorrow_end)
 
         return today_events, tomorrow_events
@@ -147,8 +173,8 @@ Answer in plain text only.
             ev["priority"] = self.assign_priority(ev)
         return sorted(events, key=lambda e: (e["priority"], e["start"]))
 
-    def run(self):
-        service = self.get_calendar_service()
+    def run(self, email: str = None):
+        service = self.get_calendar_service(email=email)
 
         today_events, tomorrow_events = self.get_today_and_tomorrow_events(service)
         today_events = self.prioritize_events(today_events)
@@ -171,7 +197,6 @@ Answer in plain text only.
             "conflicts": conflicts,
             "briefing": briefing,
         }
-
 
 if __name__ == "__main__":
     agent = PlanningAgent()

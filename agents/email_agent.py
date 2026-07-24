@@ -120,9 +120,14 @@ boilerplate. If the email is mostly promotional noise, just classify it as
 Newsletter or Commercial with a short summary; do not enumerate its links.
 """
 
-    def get_gmail_service(self, force_login: bool = False):
-        creds = get_google_credentials(force_login=force_login)
+    def get_gmail_service(self, force_login: bool = False, email: str = None):
+        creds = get_google_credentials(force_login=force_login, email=email)
         return build("gmail", "v1", credentials=creds)
+
+    def run(self, max_results=5, force_login: bool = False, email: str = None):
+        service = self.get_gmail_service(force_login=force_login, email=email)
+        emails = self.get_recent_emails(service, max_results)
+        return [self.analyze_email(email_data) for email_data in emails]
 
     def get_recent_emails(self, service, max_results=5):
         """

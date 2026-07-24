@@ -64,7 +64,66 @@ class ReplyAgent(BaseAgent):
             text = text[:max_chars].rstrip() + "..."
 
         return text
+    @staticmethod
+    def _dedupe_signoff(text: str) -> str:
+        """Filet de sécurité : le modèle produit parfois une signature
+        dupliquée (une fois au début par erreur, une fois à la fin comme
+        attendu). On ne garde que la dernière occurrence — c'est presque
+        toujours la bonne, puisque le corps de l'email doit précéder la
+        signature finale."""
+        signoff_markers = {"best regards,", "cordialement,", "bien à vous,"}
+        lines = text.split("\n")
 
+        signoff_indices = [
+            i for i, line in enumerate(lines)
+            if line.strip().lower() in signoff_markers
+        ]
+
+        if len(signoff_indices) <= 1:
+            return text
+
+        to_remove = set()
+        for idx in signoff_indices[:-1]:
+            to_remove.add(idx)
+            if idx + 1 < len(lines):
+                to_remove.add(idx + 1)  # la ligne du nom signataire qui suit
+
+        return "\n".join(line for i, line in enumerate(lines) if i not in to_remove).strip()
+
+    def draft_from_text(self, instruction_and_content: str, force_final: bool = False) -> str:
+        force_instruction = ""
+        if force_final:
+            force_instruction = """
+        CRITICAL: You have already asked one clarifying question and the user has replied.
+        Do NOT ask another question, no matter what optional details are still missing.
+        Draft the best possible complete email NOW using the information given, and if
+        something minor is genuinely still unclear, state a reasonable assumption inline
+        (e.g. "assuming this will be a virtual call") rather than asking again.
+        """
+
+        user_content = f"""
+        The user directly provided the following request/content — there is no
+        original inbox email to reference here. Draft or improve the email text
+        accordingly, following all your usual rules (no invented facts, no
+        fabricated commitments, correct sign-off for your persona).
+        {force_instruction}
+        If the request is too vague or missing key details (e.g. no recipient,
+        no clear topic) to draft a complete, sendable email, do NOT include the
+        literal words "NO_REPLY_NEEDED" anywhere in your answer — that sentinel
+        is reserved for a different context. Instead, just write the clarifying
+        question directly as your answer, in plain sentences.
+
+        User request:
+        {instruction_and_content}
+        """
+
+        raw_text = self.call_llm(user_content)
+        draft = self.clean_text_response(raw_text)
+
+        draft = re.sub(r'^NO_REPLY_NEEDED\s*', '', draft, flags=re.IGNORECASE).strip()
+        draft = self._dedupe_signoff(draft)
+
+        return draft
     def draft_reply(self, email: dict, analysis: dict) -> str | None:
         category = analysis.get("category", "Other")
 

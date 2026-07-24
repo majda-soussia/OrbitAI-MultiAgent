@@ -1,0 +1,10 @@
+{
+  "standard": {
+    "token_limit": 5000,
+    "description": "Plan gratuit — 5 000 tokens par client"
+  },
+  "premium": {
+    "token_limit": 50000,
+    "description": "Plan premium — 50 000 tokens par client"
+  }
+}

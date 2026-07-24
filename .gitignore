@@ -4,13 +4,25 @@ __pycache__/
 *.pyc
 
 # Secrets
+config/tokens/
 config/credentials.json
 config/credentials..json
 config/token.json
 config/client_secret.json
 # Environment
 .env
-
+node_modules/
 # IDE
 .vscode/
 .idea/
+
+# Node
+node_modules/
+orbit-frontend/node_modules/
+
+# RAG index
+data/rag/index/
+
+# OS
+.DS_Store
+Thumbs.db

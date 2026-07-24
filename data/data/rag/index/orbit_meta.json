@@ -1,0 +1,501 @@
+{
+  "0": {
+    "id": "faq_0",
+    "text": "Question: Combien coûte la solution Orbit ? Answer: Le prix dépend du nombre de sites, de capteurs/meters à connecter, et des modules choisis (EMS, ESG, Predictive Maintenance...). Chaque projet est différent, donc nous préparons un devis personnalisé après un premier échange sur vos besoins. Souhaitez-vous qu'on prépare une estimation ?",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "1": {
+    "id": "faq_1",
+    "text": "Question: Combien de temps prend l'installation/déploiement ? Answer: Grâce à nos modules pré-templatés, un déploiement type prend généralement quelques semaines (et non des mois), selon la complexité du site et le nombre d'équipements à connecter.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "2": {
+    "id": "faq_2",
+    "text": "Question: Est-ce qu'on doit remplacer notre matériel existant ? Answer: Non. Orbit est une architecture vendor-independent, compatible avec la plupart des compteurs, capteurs, PLC et systèmes SCADA déjà en place (Siemens, Schneider Electric, ABB, etc.). C'est conçu pour du retrofit, pas un remplacement.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "3": {
+    "id": "faq_3",
+    "text": "Question: Quels protocoles/équipements sont supportés ? Answer: Orbit supporte Modbus, OPC-UA, MQTT et BACnet, et s'intègre avec plus de 200 équipements industriels chez 40+ fournisseurs (Siemens, Schneider Electric, Janitza, ABB, Huawei, Atlas Copco, Circutor, Carlo Gavazzi...).",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "4": {
+    "id": "faq_4",
+    "text": "Question: Est-ce que mes données sont sécurisées ? Answer: Oui. Orbit utilise des tunnels sécurisés TLS 1.3, une architecture conforme IEC 62443, avec traitement local (Edge) avant synchronisation cloud chiffrée.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "5": {
+    "id": "faq_5",
+    "text": "Question: Proposez-vous un essai ou une démo ? Answer: Oui, vous pouvez demander une démo directement via https://orbitsolutions.tn/contact. Pour un diagnostic plus poussé, nous proposons aussi un audit énergétique initial.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "6": {
+    "id": "faq_6",
+    "text": "Question: Travaillez-vous avec des entreprises hors Tunisie ? Answer: Orbit opère principalement dans la région MENA (Moyen-Orient et Afrique du Nord), avec 60+ sites industriels déployés. Précisez votre pays et on confirmera la faisabilité.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "7": {
+    "id": "faq_7",
+    "text": "Question: Quelle est la différence entre EMS et ESG Intelligence ? Answer: EMS (Energy Intelligence) se concentre sur le suivi et l'optimisation de la consommation énergétique en temps réel. ESG Intelligence se concentre sur le bilan carbone et le reporting de durabilité (Scope 1/2/3). Beaucoup de clients utilisent les deux ensemble.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "8": {
+    "id": "faq_8",
+    "text": "Question: Est-ce qu'Orbit est certifié / conforme aux normes ? Answer: Oui, Orbit s'aligne sur les standards ISO 50001 (management de l'énergie), IEC 62443 (cybersécurité industrielle), et IEEE 519 (qualité de l'énergie / THD).",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "9": {
+    "id": "faq_9",
+    "text": "Question: Avez-vous des références clients dans mon secteur ? Answer: Orbit travaille avec 60+ sites industriels dans des secteurs variés : agroalimentaire (Délice, Danone, SFBT), automobile (Visteon, Draxlmaier), télécom (Ooredoo, Sagemcom), énergie (Vivo Energy) et plus. Précisez votre secteur, je peux vous donner des références pertinentes.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "faq"
+    }
+  },
+  "10": {
+    "id": "objection_0",
+    "text": "Objection: C'est trop cher / on n'a pas le budget Suggested response: Je comprends. Beaucoup de nos clients ont en fait financé le projet grâce aux économies générées : nos clients observent en moyenne 28% de réduction des coûts énergétiques, ce qui rembourse souvent l'investissement en quelques mois. Voulez-vous qu'on évalue le ROI potentiel pour votre site ?",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "objection"
+    }
+  },
+  "11": {
+    "id": "objection_1",
+    "text": "Objection: On a déjà un système SCADA / de monitoring Suggested response: Parfait, justement Orbit n'est pas conçu pour remplacer votre SCADA, mais pour s'y connecter et ajouter une couche d'intelligence IA (analyses prédictives, alertes, reporting ESG) par-dessus votre infrastructure existante via Modbus/OPC-UA.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "objection"
+    }
+  },
+  "12": {
+    "id": "objection_2",
+    "text": "Objection: On n'a pas le temps / les ressources pour un déploiement Suggested response: C'est une préoccupation fréquente. Nos modules sont pré-templatés justement pour réduire le temps de déploiement à quelques semaines, avec un accompagnement de notre équipe d'ingénierie de bout en bout — vous n'avez pas besoin de ressources internes dédiées.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "objection"
+    }
+  },
+  "13": {
+    "id": "objection_3",
+    "text": "Objection: Je ne suis pas sûr que ça marche pour notre secteur Suggested response: Orbit a été déployé dans des secteurs très variés (agroalimentaire, automobile, textile, télécom, énergie...). Quel est votre secteur exactement ? Je peux vous citer des cas similaires.",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "objection"
+    }
+  },
+  "14": {
+    "id": "objection_4",
+    "text": "Objection: On veut juste un devis rapide, pas une démo Suggested response: Compris. Pour préparer un devis précis, j'ai besoin de quelques informations : nombre de sites, nombre de compteurs/capteurs, secteur d'activité, et le ou les modules qui vous intéressent (énergie, maintenance prédictive, ESG...). Pouvez-vous me les communiquer ?",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "objection"
+    }
+  },
+  "15": {
+    "id": "objection_5",
+    "text": "Objection: On a déjà été déçu par un autre fournisseur IoT/énergie Suggested response: Je comprends cette prudence. Orbit a 15+ ans d'expertise en ingénierie (process thermiques, sécurité électrique, automatisation), pas seulement en logiciel — et nous avons des références vérifiables sur 60+ sites. Souhaitez-vous voir un cas client dans un secteur proche du vôtre ?",
+    "metadata": {
+      "source": "faq_objections.json",
+      "type": "objection"
+    }
+  },
+  "16": {
+    "id": "company_0",
+    "text": "Orbit Engineering Solutions — The AI Operating System for Industrial Performance. Orbit builds the digital nervous system of industry: IoT digital twins, predictive OEE analytics, energy management and ESG carbon monitoring for factories across MENA. Region: MENA (Middle East & North Africa). Model: Software + Hardware integration (vendor-independent platform). Website: https://orbitsolutions.tn. Contact: support@orbitsolutions.tn, +216 36 086 006. Location: ISTIC Incubator, Borj Cédria Technopole, Hammam Chatt 1164, Tunis, Tunisia.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "company"
+    }
+  },
+  "17": {
+    "id": "key_stats_0",
+    "text": "Orbit key stats: industrial sites: 60+, connected devices: 4,300+, processed data points: 5B+, average energy reduction: 28%, oee improvement: 12%, downtime reduction: 14%, co2 reduced: 148+ Tons",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "key_stats"
+    }
+  },
+  "18": {
+    "id": "module_0",
+    "text": "Orbit module: Orbit Energy Intelligence (EMS) (ems). Category: Energy Management. Description: Optimize industrial energy consumption, utilities, and power quality using real-time operational analytics and AI-driven recommendations.. More info: https://orbitsolutions.tn/ems.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "ems",
+      "category": "Energy Management"
+    }
+  },
+  "19": {
+    "id": "module_1",
+    "text": "Orbit module: Orbit ESG Intelligence (esg). Category: Sustainability. Description: Automate carbon footprint monitoring, ESG analytics, sustainability reporting, and environmental performance optimization (Scope 1/2/3 carbon accounting).. More info: https://orbitsolutions.tn/esg.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "esg",
+      "category": "Sustainability"
+    }
+  },
+  "20": {
+    "id": "module_2",
+    "text": "Orbit module: Manufacturing Intelligence (Smart Factory) (smart-factory). Category: Production. Description: Monitor OEE, production efficiency, downtime, and manufacturing operations through real-time industrial visibility.. More info: https://orbitsolutions.tn/smart-factory.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "smart-factory",
+      "category": "Production"
+    }
+  },
+  "21": {
+    "id": "module_3",
+    "text": "Orbit module: Predictive Maintenance AI (predictive-maintenance). Category: Maintenance. Description: Monitor machine health and predict equipment failures using vibration analytics, AI diagnostics, and operational intelligence.. More info: https://orbitsolutions.tn/predictive-maintenance.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "predictive-maintenance",
+      "category": "Maintenance"
+    }
+  },
+  "22": {
+    "id": "module_4",
+    "text": "Orbit module: Orbit Edge AI Gateway (iot). Category: Connectivity. Description: Secure industrial edge layer enabling local AI processing, telemetry acquisition, and multi-protocol connectivity (Modbus, OPC-UA, MQTT, BACnet).. More info: https://orbitsolutions.tn/iot.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "iot",
+      "category": "Connectivity"
+    }
+  },
+  "23": {
+    "id": "module_5",
+    "text": "Orbit module: Multi-site Hub (multisite). Category: Supervision. Description: Consolidate and benchmark metrics across global/multi-factory operations in a unified supervisor dashboard.. More info: https://orbitsolutions.tn/multisite.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "multisite",
+      "category": "Supervision"
+    }
+  },
+  "24": {
+    "id": "module_6",
+    "text": "Orbit module: Orbit AI Copilot (AI Engineer) (ai-engineer). Category: AI Assistant. Description: Industrial AI chatbot copilot delivering anomaly detection, predictive insights, KPI interpretation, root-cause diagnostics and operational recommendations.. More info: https://orbitsolutions.tn/ai-engineer.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "module",
+      "module_id": "ai-engineer",
+      "category": "AI Assistant"
+    }
+  },
+  "25": {
+    "id": "ai_agents_0",
+    "text": "Orbit AI agents suite includes: AI Energy, AI Carbon, AI Maintenance, AI Manufacturing, AI Process, AI Power Quality, AI Simulation, AI Reporting.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "ai_agents_suite"
+    }
+  },
+  "26": {
+    "id": "engineering_service_0",
+    "text": "Orbit engineering service: Energy Audits. Regulatory energy scans to optimize operational efficiency.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "engineering_service"
+    }
+  },
+  "27": {
+    "id": "engineering_service_1",
+    "text": "Orbit engineering service: Smart Metering. Precision sub-metering grids for steam, water, and power.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "engineering_service"
+    }
+  },
+  "28": {
+    "id": "engineering_service_2",
+    "text": "Orbit engineering service: Industrial IoT Integration. Deploying Edge gateways with active local telemetry nodes.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "engineering_service"
+    }
+  },
+  "29": {
+    "id": "engineering_service_3",
+    "text": "Orbit engineering service: PLC & SCADA Integration. Connecting legacy PLCs and SCADA networks to AI cores.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "engineering_service"
+    }
+  },
+  "30": {
+    "id": "engineering_service_4",
+    "text": "Orbit engineering service: ESG Consulting. Scopes 1/2/3 carbon accounting and offset auditing.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "engineering_service"
+    }
+  },
+  "31": {
+    "id": "supported_hardware_0",
+    "text": "Orbit supported hardware and protocols: device types: Energy Meters, Flow Meters, Sensors (vibration, pressure), PLCs, Power Analyzers, SCADA Systems, HVAC Controllers, Databases. Protocols: Modbus, OPC-UA, MQTT, BACnet. 200+ industrial hardware integrations across 40+ global vendors. Example vendors: Siemens, Schneider Electric, Janitza, ABB, Huawei, Atlas Copco, Circutor, Carlo Gavazzi.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "hardware"
+    }
+  },
+  "32": {
+    "id": "certifications_0",
+    "text": "Orbit certifications and standards compliance: ISO 50001, IEC 62443, IEEE 519 (Power Quality / THD compliance), TLS 1.3 secure data tunnels.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "certification"
+    }
+  },
+  "33": {
+    "id": "differentiator_0",
+    "text": "Orbit differentiator: Vendor-independent architecture: connects to any instrumentation hardware and utility meter, no vendor lock-in",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "34": {
+    "id": "differentiator_1",
+    "text": "Orbit differentiator: Retrofit-ready for legacy factories: integrates with existing PLC cabinets and instrumentation",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "35": {
+    "id": "differentiator_2",
+    "text": "Orbit differentiator: Unified AI + EMS + MES + ESG platform: eliminates split software silos",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "36": {
+    "id": "differentiator_3",
+    "text": "Orbit differentiator: Rapid deployment: pre-templated module blueprints for full implementation within weeks",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "37": {
+    "id": "differentiator_4",
+    "text": "Orbit differentiator: Edge + Cloud hybrid intelligence: sub-second local edge acquisition + centralized cloud predictive audits",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "38": {
+    "id": "differentiator_5",
+    "text": "Orbit differentiator: Real-time industrial telemetry via direct Modbus and OPC-UA observers",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "39": {
+    "id": "differentiator_6",
+    "text": "Orbit differentiator: Multi-site monitoring: consolidate and benchmark global operations in one supervisor",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "40": {
+    "id": "differentiator_7",
+    "text": "Orbit differentiator: ISO 50001 aligned methodologies with automated compliance tracking",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "41": {
+    "id": "differentiator_8",
+    "text": "Orbit differentiator: 15+ years of engineering expertise in thermal processes, electrical grid safety, and machine automation",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "42": {
+    "id": "differentiator_9",
+    "text": "Orbit differentiator: Tunisian engineering team complying with international standards",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "differentiator"
+    }
+  },
+  "43": {
+    "id": "reference_clients_food_&_agro-industry",
+    "text": "Orbit reference clients in Food & Agro-Industry: Diari (Milling & Pasta), Warda (Premium Pasta), L'Epi d'Or (Flour & Milling), Spiga (Food Processing), Mliha (Agri & Poultry), Abida, Sotuchoc (Confectionery).",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Food & Agro-Industry"
+    }
+  },
+  "44": {
+    "id": "reference_clients_dairy_&_beverages",
+    "text": "Orbit reference clients in Dairy & Beverages: Délice, Délice Danone, Danone, Délice Eau, SBT, SFBT, Cap d'Or (Cheese & Dairy), La Compagnie Fromagère.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Dairy & Beverages"
+    }
+  },
+  "45": {
+    "id": "reference_clients_cold_storage_&_packaging",
+    "text": "Orbit reference clients in Cold Storage & Packaging: ACN (Cold storage), Biopak (Packaging & Print).",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Cold Storage & Packaging"
+    }
+  },
+  "46": {
+    "id": "reference_clients_automotive",
+    "text": "Orbit reference clients in Automotive: Visteon, Draxlmaier.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Automotive"
+    }
+  },
+  "47": {
+    "id": "reference_clients_telecom_&_tech",
+    "text": "Orbit reference clients in Telecom & Tech: Ooredoo, Sagemcom, Cogemco.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Telecom & Tech"
+    }
+  },
+  "48": {
+    "id": "reference_clients_energy_&_utilities",
+    "text": "Orbit reference clients in Energy & Utilities: Vivo Energy, Sudgaz.",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Energy & Utilities"
+    }
+  },
+  "49": {
+    "id": "reference_clients_other",
+    "text": "Orbit reference clients in Other: BIC (Writing Instruments), UIB (Banking), Caveo (Industrial Safety), GSS (Security), Pristine (Industrial Hygiene), ENIT (Academic Research).",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "reference_client",
+      "sector": "Other"
+    }
+  },
+  "50": {
+    "id": "contact_channels_0",
+    "text": "Orbit contact channels: demo request: https://orbitsolutions.tn/contact, audit request: https://orbitsolutions.tn/contact?type=audit, client portal: https://orbitsolutions.tn/portal/login, documentation: https://orbitsolutions.tn/documentation, support: https://orbitsolutions.tn/support",
+    "metadata": {
+      "source": "orbit_products.json",
+      "type": "contact"
+    }
+  },
+  "51": {
+    "id": "plans_0",
+    "text": "standard: {'token_limit': 5000, 'description': 'Plan gratuit — 5 000 tokens par client'}, premium: {'token_limit': 50000, 'description': 'Plan premium — 50 000 tokens par client'}",
+    "metadata": {
+      "source": "plans.json",
+      "type": "plans"
+    }
+  },
+  "52": {
+    "id": "sector_0",
+    "text": "Sector: Agroalimentaire / Agro-industrie. Typical concerns: Consommation énergétique des fours/séchoirs, Maîtrise des coûts utilities (vapeur, eau, électricité), Traçabilité ESG pour export, Maintenance des lignes de production. Priority Orbit modules: ems, esg, smart-factory. Qualification questions to ask: Combien de lignes de production ou d'ateliers souhaitez-vous monitorer ? | Utilisez-vous beaucoup de vapeur, d'eau ou de gaz dans vos process (four, séchage, pasteurisation) ? | Avez-vous des exigences de reporting ESG pour l'export ou des certifications clients ? | Quel est votre principal défi actuel : coût énergétique, arrêts de production, ou conformité ? Reference clients: Délice, Danone, Diari, Warda, L'Epi d'Or, Spiga, Mliha, Sotuchoc.",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification",
+      "sector": "Agroalimentaire / Agro-industrie"
+    }
+  },
+  "53": {
+    "id": "sector_1",
+    "text": "Sector: Automobile / Équipementier automobile. Typical concerns: Disponibilité machine (OEE), Maintenance prédictive sur lignes critiques, Conformité énergétique pour donneurs d'ordre internationaux. Priority Orbit modules: smart-factory, predictive-maintenance, ems. Qualification questions to ask: Combien de lignes ou machines critiques souhaitez-vous surveiller ? | Avez-vous déjà des arrêts non planifiés qui impactent votre OEE ? | Vos donneurs d'ordre exigent-ils des rapports énergie/carbone (ex: normes IATF, ISO 50001) ? | Quel est le niveau d'automatisation actuel de vos lignes (PLC, SCADA existant) ? Reference clients: Visteon, Draxlmaier.",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification",
+      "sector": "Automobile / Équipementier automobile"
+    }
+  },
+  "54": {
+    "id": "sector_2",
+    "text": "Sector: Télécom / Électronique. Typical concerns: Consommation énergétique des infrastructures, Disponibilité des équipements 24/7, Monitoring multi-sites distants. Priority Orbit modules: ems, multisite, predictive-maintenance. Qualification questions to ask: Combien de sites ou stations techniques souhaitez-vous superviser ? | Sont-ils géographiquement dispersés (besoin de supervision centralisée) ? | Avez-vous des contraintes de continuité de service (uptime critique) ? | Quel est l'état de votre infrastructure de monitoring actuelle ? Reference clients: Ooredoo, Sagemcom, Cogemco.",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification",
+      "sector": "Télécom / Électronique"
+    }
+  },
+  "55": {
+    "id": "sector_3",
+    "text": "Sector: Énergie / Utilities. Typical concerns: Qualité de puissance / conformité réseau, Optimisation de la distribution, Conformité réglementaire. Priority Orbit modules: ems, iot, esg. Qualification questions to ask: Quel est votre périmètre : production, distribution, ou consommation d'énergie ? | Avez-vous des problématiques de qualité de puissance (THD, facteur de puissance) ? | Combien de points de mesure souhaitez-vous intégrer ? | Avez-vous des obligations réglementaires spécifiques à respecter ? Reference clients: Vivo Energy, Sudgaz.",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification",
+      "sector": "Énergie / Utilities"
+    }
+  },
+  "56": {
+    "id": "sector_4",
+    "text": "Sector: Industrie générale / Manufacturing divers. Typical concerns: Coûts énergétiques, Pannes machines imprévues, Manque de visibilité sur les KPI de production. Priority Orbit modules: ems, smart-factory, predictive-maintenance. Qualification questions to ask: Combien de sites ou usines avez-vous ? | Avez-vous déjà des compteurs ou capteurs installés, ou faut-il tout équiper ? | Quel est votre plus gros point de douleur actuel : énergie, maintenance, ou production ? | Quel système de contrôle utilisez-vous actuellement (SCADA, PLC, aucun) ? Reference clients: BIC, Biopak, Caveo, ACN.",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification",
+      "sector": "Industrie générale / Manufacturing divers"
+    }
+  },
+  "57": {
+    "id": "sector_5",
+    "text": "Sector: Banque / Tertiaire / Services. Typical concerns: Consommation énergétique des bâtiments, Coûts de climatisation/HVAC, Reporting ESG/RSE. Priority Orbit modules: ems, esg. Qualification questions to ask: Combien de bâtiments ou sites tertiaires souhaitez-vous monitorer ? | Le HVAC représente-t-il une part importante de votre consommation ? | Avez-vous des objectifs RSE ou ESG à atteindre ? | Quel est votre horizon pour ce projet ? Reference clients: UIB.",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification",
+      "sector": "Banque / Tertiaire / Services"
+    }
+  },
+  "58": {
+    "id": "sector_fallback_0",
+    "text": "General qualification questions (unknown sector): Quel est votre secteur d'activité ? | Combien de sites/usines souhaitez-vous équiper ? | Quel est votre principal besoin : énergie, maintenance prédictive, production (OEE), ou ESG/carbone ? | Avez-vous déjà des équipements de mesure (compteurs, capteurs) installés ? | Dans quel pays se situent vos installations ?",
+    "metadata": {
+      "source": "sector_qualification.json",
+      "type": "sector_qualification_fallback"
+    }
+  }
+}
