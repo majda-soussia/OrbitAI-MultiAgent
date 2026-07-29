@@ -1,72 +1,7 @@
 import json
 import os
-from datetime import datetime
+from utils.db import get_connection
 
-MEMORY_FILE = "data/client_memory.json"
-
-
-def _load():
-    if not os.path.exists(MEMORY_FILE):
-        return {}
-    try:
-        with open(MEMORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return {}
-
-
-def _save(data):
-    os.makedirs(os.path.dirname(MEMORY_FILE), exist_ok=True)
-    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-
-def get_client_memory(client_id: str) -> dict:
-    return _load().get(client_id, {
-        "history": [],
-        "plan": "standard",
-        "first_seen": None,
-        "last_seen": None,
-    })
-
-
-def save_client_turn(client_id: str, user_message: str, assistant_response: str):
-    data = _load()
-    profile = data.get(client_id, {
-        "history": [],
-        "plan": "standard",
-        "first_seen": datetime.now().isoformat(),
-        "last_seen": None,
-    })
-
-    profile["history"].append({"role": "user", "content": user_message})
-    profile["history"].append({"role": "assistant", "content": assistant_response})
-    profile["history"] = profile["history"][-20:]
-    profile["last_seen"] = datetime.now().isoformat()
-
-    if profile["first_seen"] is None:
-        profile["first_seen"] = datetime.now().isoformat()
-
-    data[client_id] = profile
-    _save(data)
-
-
-def set_client_plan(client_id: str, plan: str):
-    """Changer le plan d'un client : 'standard' ou 'premium'."""
-    data = _load()
-    profile = data.get(client_id, {
-        "history": [],
-        "plan": "standard",
-        "first_seen": None,
-        "last_seen": None,
-    })
-    profile["plan"] = plan
-    data[client_id] = profile
-    _save(data)
-
-
-def get_all_clients() -> dict:
-    return _load()
 PLANS_FILE = "config/plans.json"
 
 
@@ -78,24 +13,156 @@ def _load_plans() -> dict:
         return {"standard": {"token_limit": 5000}, "premium": {"token_limit": 50000}}
 
 
+def _get_user_by_email(cur, email: str):
+    cur.execute(
+        "SELECT id, plan, token_limit, created_at FROM users WHERE email = %s;",
+        (email,),
+    )
+    return cur.fetchone()
+
+
+def get_client_memory(client_id: str) -> dict:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        user = _get_user_by_email(cur, client_id)
+
+        if not user:
+            return {"history": [], "plan": "standard", "first_seen": None, "last_seen": None}
+
+        cur.execute(
+            """
+            SELECT role, content, created_at
+            FROM conversation_history
+            WHERE user_id = %s
+            ORDER BY created_at ASC
+            LIMIT 20;
+            """,
+            (user["id"],),
+        )
+        rows = cur.fetchall()
+        history = [{"role": r["role"], "content": r["content"]} for r in rows]
+        last_seen = rows[-1]["created_at"].isoformat() if rows else None
+
+        return {
+            "history": history,
+            "plan": user["plan"],
+            "first_seen": user["created_at"].isoformat() if user["created_at"] else None,
+            "last_seen": last_seen,
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+
+def save_client_turn(client_id: str, user_message: str, assistant_response: str):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        user = _get_user_by_email(cur, client_id)
+
+        if not user:
+            raise ValueError(
+                f"No user found with email {client_id}. "
+                f"The user must sign up (and verify their email) before chatting."
+            )
+
+        cur.execute(
+            """
+            INSERT INTO conversation_history (user_id, role, content, agent_name)
+            VALUES (%s, 'user', %s, 'Commercial'), (%s, 'assistant', %s, 'Commercial');
+            """,
+            (user["id"], user_message, user["id"], assistant_response),
+        )
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+
+def set_client_plan(client_id: str, plan: str):
+    """Change a client's plan: 'standard' or 'premium'."""
+    plans = _load_plans()
+    token_limit = plans.get(plan, {}).get("token_limit", 5000)
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET plan = %s, token_limit = %s WHERE email = %s;",
+            (plan, token_limit, client_id),
+        )
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+
+def get_all_clients() -> dict:
+    """
+    Returns the same shape as before: { email: {plan, tokens_used, ...} },
+    but sourced from client_token_summary + last activity from
+    conversation_history.
+    """
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT
+                s.email,
+                s.plan,
+                s.token_limit,
+                s.tokens_used,
+                (
+                    SELECT MAX(ch.created_at)
+                    FROM conversation_history ch
+                    WHERE ch.user_id = s.id
+                ) AS last_seen
+            FROM client_token_summary s;
+            """
+        )
+        rows = cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+
+    result = {}
+    for row in rows:
+        result[row["email"]] = {
+            "plan": row["plan"],
+            "tokens_used": row["tokens_used"],
+            "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None,
+        }
+    return result
+
+
 def add_client_tokens(client_id: str, tokens_used: int):
-    """Incrémente le compteur de tokens consommés par ce client."""
-    data = _load()
-    profile = data.get(client_id, {
-        "history": [],
-        "plan": "standard",
-        "tokens_used": 0,
-        "first_seen": None,
-        "last_seen": None,
-    })
-    profile["tokens_used"] = profile.get("tokens_used", 0) + tokens_used
-    data[client_id] = profile
-    _save(data)
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        user = _get_user_by_email(cur, client_id)
+
+        if not user:
+            raise ValueError(f"No user found with email {client_id}.")
+
+        cur.execute(
+            """
+            INSERT INTO token_usage (user_id, agent_name, prompt_tokens, response_tokens, total_tokens)
+            VALUES (%s, 'Commercial', 0, %s, %s);
+            """,
+            (user["id"], tokens_used, tokens_used),
+        )
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
 
 
 def check_quota(client_id: str) -> dict:
     """
-    Retourne le statut du quota pour ce client.
+    Returns the quota status for this client:
     {
         "allowed": True/False,
         "plan": "standard"/"premium",
@@ -104,22 +171,38 @@ def check_quota(client_id: str) -> dict:
         "remaining": 3766
     }
     """
-    data = _load()
-    plans = _load_plans()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT plan, token_limit, tokens_used FROM client_token_summary WHERE email = %s;",
+            (client_id,),
+        )
+        row = cur.fetchone()
+    finally:
+        cur.close()
+        conn.close()
 
-    profile = data.get(client_id, {
-        "plan": "standard",
-        "tokens_used": 0,
-    })
+    if not row:
+        # Unknown user: default to standard limits, 0 used (mirrors the
+        # old JSON behavior for a client_id never seen before).
+        plans = _load_plans()
+        token_limit = plans.get("standard", {}).get("token_limit", 5000)
+        return {
+            "allowed": True,
+            "plan": "standard",
+            "tokens_used": 0,
+            "token_limit": token_limit,
+            "remaining": token_limit,
+        }
 
-    plan_name = profile.get("plan", "standard")
-    token_limit = plans.get(plan_name, {}).get("token_limit", 5000)
-    tokens_used = profile.get("tokens_used", 0)
+    token_limit = row["token_limit"]
+    tokens_used = row["tokens_used"]
     remaining = max(0, token_limit - tokens_used)
 
     return {
         "allowed": tokens_used < token_limit,
-        "plan": plan_name,
+        "plan": row["plan"],
         "tokens_used": tokens_used,
         "token_limit": token_limit,
         "remaining": remaining,

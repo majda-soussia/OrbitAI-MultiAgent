@@ -70,7 +70,29 @@ Latest user message: "{message}"
 Respond with ONLY this JSON, nothing else:
 {{"in_scope": true or false, "reason": "one short sentence"}}
 """
+PRICING_KEYWORDS = [
+    "prix", "coût", "cout", "tarif", "tarifs", "devis", "budget",
+    "combien", "price", "cost", "quotation", "pricing"
+]
 
+def needs_pricing_context(question: str) -> bool:
+    q_lower = question.lower()
+    return any(kw in q_lower for kw in PRICING_KEYWORDS)
+
+
+def get_rag_context(question: str) -> str:
+    from data.rag.retriever import retrieve, build_context_block
+
+    all_results = retrieve(question, top_k=3)
+
+    if needs_pricing_context(question):
+        pricing_results = retrieve(question, top_k=2, type_filter="pricing")
+        # fusion sans doublons, pricing en priorité
+        seen_ids = {r["text"] for r in pricing_results}
+        merged = pricing_results + [r for r in all_results if r["text"] not in seen_ids]
+        return build_context_block(merged[:4])
+
+    return build_context_block(all_results)
 class CommercialAgent(BaseAgent):
     max_tokens = 250
     def __init__(self, config_path="config/llm.yaml"):
@@ -79,10 +101,10 @@ class CommercialAgent(BaseAgent):
 
         super().__init__(config_path)
 
-        with open("data/faq_objections.json", "r", encoding="utf-8") as f:
+        with open("data/rag/sources/faq_objections.json", "r", encoding="utf-8") as f:
             self.faq_data = json.load(f)
 
-        with open("data/sector_qualification.json", "r", encoding="utf-8") as f:
+        with open("data/rag/sources/sector_qualification.json", "r", encoding="utf-8") as f:
             self.sector_data = json.load(f)
     @staticmethod
     def _matches_jargon_allowlist(message: str) -> bool:
@@ -137,8 +159,21 @@ class CommercialAgent(BaseAgent):
         if not self._is_in_scope(user_message, history):
             return OFF_TOPIC_REFUSAL
 
+        try:
+            rag_context = get_rag_context(user_message)
+        except Exception as e:
+            print(f"[CommercialAgent] RAG context error: {e}")
+            rag_context = ""
+        print("\n=== RAG CONTEXT INJECTÉ ===")
+        print(rag_context if rag_context else "(VIDE)")
+        print("===========================\n")
+        augmented_message = (
+            f"{rag_context}\n\nCustomer question: {user_message}"
+            if rag_context else user_message
+        )
+
         raw_text = self.call_llm(
-            user_message,
+            augmented_message,
             extra_messages=history
         )
 

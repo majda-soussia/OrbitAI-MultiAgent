@@ -1,5 +1,6 @@
 from agents.base_agent import BaseAgent
 from agents.google_auth import get_google_credentials
+from utils.google_oauth import get_credentials_for_user
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta, time
 import json
@@ -51,11 +52,18 @@ Answer in plain text only.
 
 
     def get_calendar_service(self, email: str = None):
+        """Legacy path: local single-user desktop OAuth flow. Unchanged."""
         creds = get_google_credentials(email=email)
         return build("calendar", "v3", credentials=creds)
 
-    def run(self, email: str = None):
-        service = self.get_calendar_service(email=email)
+    def get_calendar_service_for_user(self, user_id: int):
+        """New path: per-user web OAuth flow, credentials from PostgreSQL."""
+        creds = get_credentials_for_user(user_id)
+        return build("calendar", "v3", credentials=creds)
+
+    def _build_briefing(self, service) -> dict:
+        """Shared logic between run() and run_for_user() — avoids duplicating
+        the whole event-fetching/prioritizing/briefing pipeline twice."""
         today_events, tomorrow_events = self.get_today_and_tomorrow_events(service)
         today_events = self.prioritize_events(today_events)
         tomorrow_events = self.prioritize_events(tomorrow_events)
@@ -69,8 +77,8 @@ Answer in plain text only.
             "conflicts": conflicts,
             "briefing": briefing,
         }
+
     def get_events_for_range(self, service, start_dt, end_dt, calendar_id="primary"):
-        from utils.settings import is_debug_enabled
         time_min = start_dt.isoformat()
         time_max = end_dt.isoformat()
         if is_debug_enabled():
@@ -174,30 +182,15 @@ Answer in plain text only.
         return sorted(events, key=lambda e: (e["priority"], e["start"]))
 
     def run(self, email: str = None):
+        """Legacy entry point — unchanged, still used for CLI/dev testing."""
         service = self.get_calendar_service(email=email)
+        return self._build_briefing(service)
 
-        today_events, tomorrow_events = self.get_today_and_tomorrow_events(service)
-        today_events = self.prioritize_events(today_events)
-        tomorrow_events = self.prioritize_events(tomorrow_events)
-
-        all_events = today_events + tomorrow_events
-        conflicts = self.detect_conflicts(all_events)
-
-        payload = {
-            "today": today_events,
-            "tomorrow": tomorrow_events,
-            "conflicts": conflicts,
-        }
-
-        briefing = self.call_llm(json.dumps(payload, ensure_ascii=False))
-
-        return {
-            "today_events": today_events,
-            "tomorrow_events": tomorrow_events,
-            "conflicts": conflicts,
-            "briefing": briefing,
-        }
-
+    def run_for_user(self, user_id: int):
+        """New entry point for the API: builds this user's own briefing,
+        using their own connected Google Calendar."""
+        service = self.get_calendar_service_for_user(user_id)
+        return self._build_briefing(service)
 if __name__ == "__main__":
     agent = PlanningAgent()
     result = agent.run()

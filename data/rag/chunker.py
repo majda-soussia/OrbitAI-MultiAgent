@@ -1,20 +1,6 @@
-"""
-chunker.py
-----------
-Lit tous les fichiers JSON presents dans data/rag/sources/ et les
-transforme en chunks (texte + metadata) prets a etre embeddes.
+# Directory containing all RAG source files
 
-Pour chaque fichier connu (orbit_products, pricing, faq_objections),
-un handler dedie produit un texte lisible et precis.
-
-Pour un fichier inconnu ou un nouveau fichier ajoute plus tard sans
-handler dedie, le fallback generique transforme automatiquement chaque
-entree de liste en "cle: valeur, cle: valeur..." -> rien ne plante,
-mais la qualite du texte est moins bonne qu'un handler dedie.
-Ajoutez un handler specifique des que possible pour un nouveau fichier
-metier important (ex: clients.json, plans.json).
-"""
-
+# Load a JSON file and return its content as a Python object.
 import json
 import os
 
@@ -27,8 +13,8 @@ def load_json(filename):
         return json.load(f)
 
 
-# ---------- Handlers specifiques ----------
-
+# -------- Specific handlers --------
+# Build chunks from orbit_products.json.
 def chunk_products(filename="orbit_products.json"):
     """
     Adapte au vrai schema orbit_products.json (pas de cle "products", mais
@@ -131,13 +117,16 @@ def chunk_pricing(filename="pricing.json"):
     chunks = []
     for i, row in enumerate(data.get("pricing", [])):
         price = row.get("price_eur_per_month")
-        price_str = f"{price} EUR/month" if price is not None else "custom quotation (contact sales)"
+        price_str = f"{price} EUR par mois" if price is not None else "devis personnalisé (contactez les ventes)"
         setup = row.get("setup_fee_eur")
-        setup_str = f"{setup} EUR" if setup is not None else "custom"
+        setup_str = f"{setup} EUR" if setup is not None else "sur devis"
         text = (
-            f"Pricing for {row.get('product_id')}, tier {row.get('tier')}, "
-            f"for {row.get('meters_range')} meters: {price_str}. "
-            f"Setup fee: {setup_str}. Notes: {row.get('notes', '')}."
+            f"Le module {row.get('product_id')} niveau {row.get('tier')} couvre les installations "
+            f"de {row.get('meters_range')} compteurs/capteurs. "
+            f"Ce tarif est un FORFAIT MENSUEL FIXE (et non un prix par compteur) : {price_str} au total, "
+            f"quel que soit le nombre exact de compteurs dans cette tranche. "
+            f"Frais d'installation (unique, non récurrent) : {setup_str}. "
+            f"Notes : {row.get('notes', '')}."
         )
         chunks.append({
             "id": f"pricing_{i}",
@@ -146,7 +135,6 @@ def chunk_pricing(filename="pricing.json"):
                          "product_id": row.get("product_id"), "tier": row.get("tier")},
         })
     return chunks
-
 
 def chunk_faq(filename="faq_objections.json"):
     data = load_json(filename)
@@ -196,8 +184,7 @@ SPECIFIC_HANDLERS = {
     "sector_qualification.json": chunk_sector_qualification,
 }
 
-
-# ---------- Fallback generique ----------
+# -------- Generic fallback handler --------
 
 def chunk_generic(filename):
     """Pour tout JSON sans handler dedie (clients.json, plans.json,
@@ -232,8 +219,7 @@ def chunk_generic(filename):
 
 
 def build_all_chunks():
-    """Parcourt tous les .json de data/rag/sources/, applique le handler
-    dedie s'il existe, sinon le fallback generique."""
+# Scan all JSON files in the sources directory.
     chunks = []
     resolved_path = os.path.abspath(SOURCES_DIR)
 

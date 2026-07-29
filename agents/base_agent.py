@@ -6,9 +6,7 @@ import os
 import sys
 
 from utils.token_tracker import log_usage
-from data.rag.retriever import retrieve, build_context_block # import local: evite le cout si use_rag=False
-# Permet d'importer rag/retriever.py depuis n'importe quel agent qui
-# herite de BaseAgent, sans avoir a dupliquer le sys.path ailleurs.
+from data.rag.retriever import retrieve, build_context_block 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "rag"))
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
@@ -34,7 +32,8 @@ class BaseAgent:
         with open(config_path, "r", encoding="utf-8") as f:
             self.config = yaml.safe_load(f)
 
-        # Si la sous-classe n'override pas une valeur, on prend le défaut du yaml
+        # If the subclass does not override a parameter,
+        # use the default value from the configuration file.
         if self.model_name is None:
             self.model_name = self.config["model"]["name"]
         if self.temperature is None:

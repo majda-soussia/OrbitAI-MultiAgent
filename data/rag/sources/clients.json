@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Délice",
+    "sector": "Agroalimentaire",
+    "country": "Tunisie",
+    "modules": "EMS, Predictive Maintenance",
+    "sites_count": 4
+  },
+  {
+    "name": "Danone",
+    "sector": "Agroalimentaire",
+    "country": "Tunisie",
+    "modules": "EMS, ESG",
+    "sites_count": 2
+  },
+  {
+    "name": "SFBT",
+    "sector": "Agroalimentaire",
+    "country": "Tunisie",
+    "modules": "EMS, OEE",
+    "sites_count": 3
+  },
+  {
+    "name": "Visteon",
+    "sector": "Automobile",
+    "country": "Tunisie",
+    "modules": "OEE, Predictive Maintenance",
+    "sites_count": 1
+  },
+  {
+    "name": "Draxlmaier",
+    "sector": "Automobile",
+    "country": "Tunisie",
+    "modules": "EMS, OEE",
+    "sites_count": 2
+  },
+  {
+    "name": "Ooredoo",
+    "sector": "Télécom",
+    "country": "Tunisie",
+    "modules": "EMS, ESG",
+    "sites_count": 5
+  },
+  {
+    "name": "Sagemcom",
+    "sector": "Télécom",
+    "country": "Tunisie",
+    "modules": "EMS",
+    "sites_count": 1
+  },
+  {
+    "name": "Vivo Energy",
+    "sector": "Énergie",
+    "country": "Tunisie",
+    "modules": "EMS, ESG, Predictive Maintenance",
+    "sites_count": 6
+  }
+]

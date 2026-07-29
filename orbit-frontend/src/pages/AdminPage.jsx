@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { getTokenSummary, getSessions, getDebugStatus, setDebugStatus, getClients, setClientPlan } from "../api";
+import { useAuth } from "../context/AuthContext";
 
 export default function AdminPage() {
+  const { accessToken } = useAuth();
   const [tokens, setTokens] = useState(null);
   const [sessions, setSessions] = useState(null);
   const [debug, setDebug] = useState(false);
@@ -12,7 +14,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [tokenData, sessionData, debugData, clientData] = await Promise.all([
-        getTokenSummary(), getSessions(), getDebugStatus(), getClients(),
+        getTokenSummary(accessToken), getSessions(accessToken), getDebugStatus(accessToken), getClients(accessToken),
       ]);
       setTokens(tokenData);
       setSessions(sessionData);
@@ -29,26 +31,28 @@ export default function AdminPage() {
     let cancelled = false;
     (async () => { if (!cancelled) await refresh(); })();
     return () => { cancelled = true; };
-  }, []);
+  }, [accessToken]);
 
   async function handleToggleDebug() {
-    const result = await setDebugStatus(!debug);
+    const result = await setDebugStatus(!debug, accessToken);
     setDebug(result.debug);
   }
 
   async function handleUpgrade(email) {
-    await setClientPlan(email, "premium");
+    await setClientPlan(email, "premium", accessToken);
     await refresh();
   }
 
   async function handleDowngrade(email) {
-    await setClientPlan(email, "standard");
+    await setClientPlan(email, "standard", accessToken);
     await refresh();
   }
 
   if (loading) return <div style={styles.container}>Chargement...</div>;
 
-  const maxTokens = Math.max(...Object.values(tokens.by_agent), 1);
+  const maxTokens = tokens
+  ? Math.max(...Object.values(tokens.by_agent), 1)
+  : 1;
   const agentColors = ["#2563eb", "#6366f1", "#8b5cf6", "#a78bfa", "#3b82f6"];
 
   const totalBudget = clients
@@ -80,21 +84,21 @@ export default function AdminPage() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </div>
           <p style={styles.metricLabel}>Appels LLM</p>
-          <p style={styles.metricValue}>{tokens.total_calls}</p>
+          <p style={styles.metricValue}>{tokens?.total_calls ?? 0}</p>
         </div>
         <div style={styles.metricCard}>
           <div style={styles.metricIconWrap}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><circle cx="8" cy="8" r="6"/><circle cx="16" cy="16" r="6" opacity="0.5"/></svg>
           </div>
           <p style={styles.metricLabel}>Tokens totaux</p>
-          <p style={styles.metricValue}>{tokens.total_tokens.toLocaleString()}</p>
+          <p style={styles.metricValue}>{(tokens?.total_tokens ?? 0).toLocaleString()}</p>
         </div>
         <div style={styles.metricCard}>
           <div style={styles.metricIconWrap}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
           <p style={styles.metricLabel}>Sessions actives</p>
-          <p style={styles.metricValue}>{Object.keys(sessions).length}</p>
+          <p style={styles.metricValue}>{Object.keys(sessions ?? {}).length}</p>
         </div>
         <div style={styles.metricCard}>
           <div style={styles.metricIconWrap}>
@@ -139,7 +143,7 @@ export default function AdminPage() {
           <span style={{ fontSize: 13, color: "#94a3b8" }}>{Object.keys(tokens.by_agent).length} agents</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {Object.entries(tokens.by_agent).map(([agent, count], i) => (
+          {Object.entries(tokens?.by_agent ?? {}).map(([agent, count], i) => (
             <div key={agent} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: agentColors[i % agentColors.length], flexShrink: 0 }} />
               <span style={styles.agentLabel}>{agent.replace("Agent", "")}</span>

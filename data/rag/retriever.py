@@ -1,11 +1,3 @@
-"""
-retriever.py
-------------
-Point d'entree unique appele par BaseAgent.get_rag_context().
-Charge l'index FAISS une seule fois (cache module-level) puis expose
-retrieve() et build_context_block().
-"""
-
 import os
 import json
 import faiss
@@ -13,12 +5,18 @@ import numpy as np
 
 from data.rag.embeddings import embed_text
 from data.rag.ingest import normalize, INDEX_PATH, META_PATH
-
+# Cached FAISS index and metadata.
 _index = None
 _meta = None
 
 
 def _load():
+    """
+    Load the FAISS index and metadata into memory.
+
+    The index is loaded only once and reused for all
+    subsequent retrieval requests.
+    """
     global _index, _meta
     if _index is None:
         if not os.path.exists(INDEX_PATH):
@@ -32,12 +30,24 @@ def _load():
 
 
 def retrieve(question: str, top_k: int = 4, type_filter: str = None) -> list:
+    """Retrieve the most relevant chunks for a user question.
+
+    Parameters:
+        question: User query.
+        top_k: Maximum number of chunks to return.
+        type_filter: Optional metadata filter
+                     (e.g. pricing, faq, company).
+
+    Returns:
+        A list of matching chunks with their similarity scores.
+    """
     index, meta = _load()
-
+    # Convert the user question into an embedding vector.
     q_vector = embed_text(question).reshape(1, -1)
+    # Normalize the query vector.
     q_vector = normalize(q_vector)
-
-    search_k = top_k * 5 if type_filter else top_k
+    # Retrieve extra candidates when filtering by type.
+    search_k = index.ntotal if type_filter else top_k
     scores, indices = index.search(q_vector, search_k)
 
     results = []

@@ -55,11 +55,19 @@
       {
         "role": "assistant",
         "content": "To effectively minimize your energy consumption, we can leverage several Orbit modules tailored for that purpose.\n\nCould you provide some details about your current setup and specific areas where you'd like to focus? For example:\n- How many sites do you have?\n- What types of meters or sensors are currently in use?\n- Are there any particular processes or equipment that consume a lot of energy?\n\nThis information will help us recommend the best combination of modules, such as Orbit Energy Intelligence (EMS) for real-time monitoring and optimization."
+      },
+      {
+        "role": "user",
+        "content": "Combien coûte votre solution pour 50 compteurs ?"
+      },
+      {
+        "role": "assistant",
+        "content": "For 50 meters or sensors, you would be interested in the Standard EMS module, which covers installations with 11-50 meters/sensors. The cost for this module is a fixed monthly fee of 600 EUR per month, with no additional charges per meter.\n\nWould you like to proceed with a detailed quote and setup plan? If so, could you provide more details about your sites and specific needs? This will help us tailor the solution to your requirements."
       }
     ],
     "plan": "premium",
     "first_seen": "2026-07-24T09:00:36.209979",
-    "last_seen": "2026-07-24T09:01:52.623961",
-    "tokens_used": 6167
+    "last_seen": "2026-07-27T11:08:07.576412",
+    "tokens_used": 9788
   }
 }

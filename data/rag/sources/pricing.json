@@ -1,0 +1,52 @@
+{
+  "pricing": [
+    {
+      "product_id": "EMS",
+      "tier": "Starter",
+      "meters_range": "1-10",
+      "price_eur_per_month": 250,
+      "setup_fee_eur": 500,
+      "notes": "Monitoring énergétique de base, tableau de bord temps réel, alertes email."
+    },
+    {
+      "product_id": "EMS",
+      "tier": "Standard",
+      "meters_range": "11-50",
+      "price_eur_per_month": 600,
+      "setup_fee_eur": 1200,
+      "notes": "Inclut rapports mensuels automatisés et intégration SCADA."
+    },
+    {
+      "product_id": "EMS",
+      "tier": "Enterprise",
+      "meters_range": "51-200",
+      "price_eur_per_month": null,
+      "setup_fee_eur": null,
+      "notes": "Devis personnalisé selon nombre de sites et besoins spécifiques."
+    },
+    {
+      "product_id": "PdM",
+      "tier": "Standard",
+      "meters_range": "1-30",
+      "price_eur_per_month": 800,
+      "setup_fee_eur": 1500,
+      "notes": "Maintenance prédictive avec détection d'anomalies vibratoires et thermiques."
+    },
+    {
+      "product_id": "ESG",
+      "tier": "Standard",
+      "meters_range": "toutes tailles",
+      "price_eur_per_month": 400,
+      "setup_fee_eur": 800,
+      "notes": "Suivi empreinte carbone et reporting ESG conforme aux normes en vigueur."
+    },
+    {
+      "product_id": "OEE",
+      "tier": "Standard",
+      "meters_range": "1-20 lignes",
+      "price_eur_per_month": 550,
+      "setup_fee_eur": 1000,
+      "notes": "Suivi des KPI de production (TRS/OEE), tableau de bord temps réel."
+    }
+  ]
+}

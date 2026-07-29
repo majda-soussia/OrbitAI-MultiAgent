@@ -2,8 +2,9 @@ import re
 
 from agents.base_agent import BaseAgent
 from agents.google_auth import get_google_credentials
+from utils.google_oauth import get_credentials_for_user
 from googleapiclient.discovery import build
-import json  
+import json
 
 import base64
 class EmailAgent(BaseAgent):
@@ -46,16 +47,41 @@ Academic:
 - SympactAI
 
 Commercial:
-- Sales
-- Clients
-- Quotations
-- Products
+- Emails from or about a specific human prospect/client discussing OUR business
+  (quotation requests, sales conversations, contract questions, client meetings).
+- NEVER automated marketing/promotional emails, even if they mention products,
+  subscriptions, or discounts — those always belong to Newsletter instead.
 
+Newsletter:
+- ANY automated marketing or promotional email: platform recommendations
+  (Pinterest, Udemy, Canva, etc.), tech/industry newsletters, subscription
+  offers, discount campaigns. If the sender is a mass-mailing platform and
+  the email pushes content/offers rather than addressing you personally
+  about a specific business need, it is Newsletter — even if "product" or
+  "offer" appears in the text.
+
+DISAMBIGUATION RULE: if you hesitate between Commercial and Newsletter, ask
+"is this a mass-sent automated email, or a personal/business conversation
+about our company?" Mass-sent → Newsletter. Personal/business → Commercial.
+
+EXPLICIT EXAMPLES (do not deviate from these):
+- Udemy/Coursera/LinkedIn Learning subscription or course promotion email →
+  Newsletter (NOT Commercial), even if it mentions "subscription", "discount",
+  "save money", or "boost your career". This is a mass marketing email from
+  a learning platform, not a business inquiry about Orbit.
+- A prospect asking "what's your pricing for 50 meters?" → Commercial.
+- A platform (Udemy, Canva, Notion, Adobe, etc.) advertising ITS OWN paid
+  plans or features to you → always Newsletter, regardless of pricing
+  language in the email.
 Meeting:
-- Invitations
-- Calendar
-- Zoom
-- Teams
+- Any email containing a specific, attendable event: a date/time AND a
+  join link or location (Zoom, Teams, Google Meet, in-person address).
+- This applies EVEN IF the email is templated or sent to many recipients
+  (e.g. a networking event invite, a webinar you registered for, a workshop
+  confirmation). Mass-sent does NOT disqualify Meeting — what matters is
+  whether there is a concrete, joinable event with a date/time.
+- Only classify as Notification instead if there is NO specific date/time
+  or NO way to join/attend (e.g. a generic "check out our events page" link).
 
 Recruitment:
 - Internship offers, job postings, job alerts, interview scheduling from an EMPLOYER
@@ -74,7 +100,10 @@ Notification:
   collaboration, NOT a job offer, even though it uses the word "invited".
 - Any automated platform invite (GitHub, Google Drive, Notion, Figma, etc.) to
   collaborate on a document/project/repo belongs here, not in Recruitment.
-
+- Platform activity alerts with NO specific attendable event (e.g. "new post
+  from X", "new skill available", "your item shipped"). If a concrete date/
+  time + join link/location is present, it belongs to Meeting instead, not
+  Notification, even if it's otherwise a platform-style notification.
 Newsletter:
 - Marketing
 - Promotions
@@ -121,14 +150,47 @@ Newsletter or Commercial with a short summary; do not enumerate its links.
 """
 
     def get_gmail_service(self, force_login: bool = False, email: str = None):
+        """
+        Legacy path: local single-user desktop OAuth flow (config/tokens/*.json).
+        Kept for CLI/dev usage — unchanged.
+        """
         creds = get_google_credentials(force_login=force_login, email=email)
         return build("gmail", "v1", credentials=creds)
 
-    def run(self, max_results=5, force_login: bool = False, email: str = None):
+    def get_gmail_service_for_user(self, user_id: int):
+        """
+        New path: per-user web OAuth flow, credentials loaded from
+        PostgreSQL (oauth_credentials table), refreshed automatically
+        if expired. Used when this agent is invoked from the API on
+        behalf of a real signed-up user.
+        """
+        creds = get_credentials_for_user(user_id)
+        return build("gmail", "v1", credentials=creds)
+
+    def run(self, max_results=5, force_login: bool = False, email: str = None, query: str = None):
+        """Legacy entry point — unchanged, still used for CLI/dev testing."""
         service = self.get_gmail_service(force_login=force_login, email=email)
-        emails = self.get_recent_emails(service, max_results)
+
+        if query:
+            emails = self.search_emails(service, query, max_results)
+        else:
+            emails = self.get_recent_emails(service, max_results)
+
         return [self.analyze_email(email_data) for email_data in emails]
 
+    def run_for_user(self, user_id: int, max_results=5, query: str = None):
+        """
+        New entry point for the API: analyzes the given user's own
+        Gmail inbox, using their own connected Google account.
+        """
+        service = self.get_gmail_service_for_user(user_id)
+
+        if query:
+            emails = self.search_emails(service, query, max_results)
+        else:
+            emails = self.get_recent_emails(service, max_results)
+
+        return [self.analyze_email(email_data) for email_data in emails]
     def get_recent_emails(self, service, max_results=5):
         """
         Retrieve the most recent emails from Gmail.
@@ -156,7 +218,8 @@ Newsletter or Commercial with a short summary; do not enumerate its links.
                 "subject": subject,
                 "body": body,
             })
-
+        for msg in messages:
+            print(f"[DEBUG] message id: {msg['id']}")
         return emails
     def search_emails(self, service, query, max_results=5):
         """
@@ -303,10 +366,7 @@ Newsletter or Commercial with a short summary; do not enumerate its links.
 
         return result
 
-    def run(self, max_results=5, force_login: bool = False):
-        service = self.get_gmail_service(force_login=force_login)
-        emails = self.get_recent_emails(service, max_results)
-        return [self.analyze_email(email) for email in emails]
+    
 
 
 if __name__ == "__main__":
