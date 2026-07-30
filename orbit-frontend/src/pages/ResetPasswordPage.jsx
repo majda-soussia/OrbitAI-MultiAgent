@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function SignupPage() {
-  const { signup } = useAuth();
+export default function ResetPasswordPage() {
+  const { resetPassword } = useAuth();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const token = searchParams.get("token");
 
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -20,38 +22,34 @@ export default function SignupPage() {
       setError("Passwords do not match.");
       return;
     }
-
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+      setError("Password must be at least 8 characters.");
       return;
     }
 
     setLoading(true);
-
     try {
-      const result = await signup(email.trim(), password);
-      setSuccess(
-        result.message ||
-          "Your account has been created. Please check your email to verify your account."
-      );
+      await resetPassword(token, password);
+      setSuccess(true);
+      setTimeout(() => navigate("/login"), 2500);
     } catch (err) {
-      setError(err.message || "Unable to create your account.");
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   }
 
-  if (success) {
+  if (!token) {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
-          <h1 style={styles.title}>Check your inbox</h1>
-
-          <p style={styles.subtitle}>{success}</p>
-
+          <h1 style={styles.title}>Invalid Link</h1>
+          <p style={styles.subtitle}>
+            This password reset link is missing or malformed.
+          </p>
           <p style={styles.footerText}>
-            <Link to="/login" style={styles.link}>
-              Back to Sign In
+            <Link to="/forgot-password" style={styles.link}>
+              Request a new link
             </Link>
           </p>
         </div>
@@ -62,60 +60,52 @@ export default function SignupPage() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.title}>Create an account</h1>
-        <p style={styles.subtitle}>Join Orbit AI Assistant</p>
+        <h1 style={styles.title}>Set New Password</h1>
+        <p style={styles.subtitle}>Choose a new password for your account</p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="you@company.com"
-              autoComplete="email"
-            />
-          </label>
+        {success ? (
+          <div style={styles.success}>
+            Password set successfully. Redirecting to sign in...
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <label style={styles.label}>
+              New Password
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={styles.input}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </label>
 
-          <label style={styles.label}>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="At least 8 characters"
-              autoComplete="new-password"
-            />
-          </label>
+            <label style={styles.label}>
+              Confirm Password
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                style={styles.input}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </label>
 
-          <label style={styles.label}>
-            Confirm Password
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="••••••••"
-              autoComplete="new-password"
-            />
-          </label>
+            {error && <div style={styles.error}>{error}</div>}
 
-          {error && <div style={styles.error}>{error}</div>}
-
-          <button type="submit" style={styles.button} disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
-        </form>
+            <button type="submit" style={styles.button} disabled={loading}>
+              {loading ? "Setting password..." : "Set Password"}
+            </button>
+          </form>
+        )}
 
         <p style={styles.footerText}>
-          Already have an account?{" "}
           <Link to="/login" style={styles.link}>
-            Sign In
+            Back to sign in
           </Link>
         </p>
       </div>
@@ -188,6 +178,14 @@ const styles = {
     padding: "8px 12px",
     borderRadius: 8,
     fontSize: 13,
+  },
+  success: {
+    background: "#f0fdf4",
+    color: "#16a34a",
+    padding: "12px 14px",
+    borderRadius: 8,
+    fontSize: 13,
+    lineHeight: 1.5,
   },
   footerText: {
     marginTop: 20,

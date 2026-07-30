@@ -49,12 +49,21 @@ export async function getCurrentUser(token) {
   return authFetch("/api/auth/me", { token });
 }
 
+export async function forgotPassword(email) {
+  return authFetch("/api/auth/forgot-password", { method: "POST", body: { email } });
+}
+
+export async function resetPassword(resetToken, newPassword) {
+  return authFetch("/api/auth/reset-password", {
+    method: "POST",
+    body: { token: resetToken, new_password: newPassword },
+  });
+}
+
+
 // ---------------------------------------------------------------------
 // CHAT
 // ---------------------------------------------------------------------
-// client_email is intentionally not a parameter anymore: the backend
-// derives the user solely from the JWT (if provided). Passing no token
-// at all uses the guest trial mode handled server-side.
 export async function sendChatMessage(sessionId, message, token = null) {
   return authFetch("/api/chat", {
     method: "POST",

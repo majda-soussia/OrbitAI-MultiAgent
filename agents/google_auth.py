@@ -24,23 +24,17 @@ def _debug_print(message: str):
 
 
 def get_google_credentials(force_login: bool = False, email: str = None):
-    """
-    Retourne les credentials Google pour un email donné.
-    Si email=None, utilise le token par défaut (config/tokens/default.json)
-    pour la compatibilité avec les agents qui ne connaissent pas encore
-    l'email de l'utilisateur (ex: appel CLI direct).
-    """
     os.makedirs(TOKENS_DIR, exist_ok=True)
 
     token_file = _token_path(email) if email else os.path.join(TOKENS_DIR, "default.json")
 
-    # Migration : si l'ancien token.json existe encore, on le déplace
-    # vers le nouveau dossier comme token par défaut.
-    legacy_token = "config/token.json"
-    if os.path.exists(legacy_token) and not os.path.exists(token_file):
-        import shutil
-        shutil.copy(legacy_token, token_file)
-        _debug_print(f"Migrated legacy token to {token_file}")
+
+    if email is None:
+        legacy_token = "config/token.json"
+        if os.path.exists(legacy_token) and not os.path.exists(token_file):
+            import shutil
+            shutil.copy(legacy_token, token_file)
+            _debug_print(f"Migrated legacy token to {token_file}")
 
     creds = None
 

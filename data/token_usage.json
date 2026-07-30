@@ -1230,5 +1230,159 @@
     "prompt_tokens": 1636,
     "response_tokens": 110,
     "total_tokens": 1746
+  },
+  {
+    "timestamp": "2026-07-29T15:25:30.849014",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1818,
+    "response_tokens": 102,
+    "total_tokens": 1920
+  },
+  {
+    "timestamp": "2026-07-29T15:25:35.355081",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1659,
+    "response_tokens": 103,
+    "total_tokens": 1762
+  },
+  {
+    "timestamp": "2026-07-29T15:25:39.652998",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1299,
+    "response_tokens": 98,
+    "total_tokens": 1397
+  },
+  {
+    "timestamp": "2026-07-29T15:25:44.609924",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1711,
+    "response_tokens": 111,
+    "total_tokens": 1822
+  },
+  {
+    "timestamp": "2026-07-29T15:25:49.196151",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1524,
+    "response_tokens": 106,
+    "total_tokens": 1630
+  },
+  {
+    "timestamp": "2026-07-29T15:26:23.341834",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1424,
+    "response_tokens": 113,
+    "total_tokens": 1537
+  },
+  {
+    "timestamp": "2026-07-29T15:26:27.977427",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1502,
+    "response_tokens": 109,
+    "total_tokens": 1611
+  },
+  {
+    "timestamp": "2026-07-29T15:26:32.411977",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1443,
+    "response_tokens": 106,
+    "total_tokens": 1549
+  },
+  {
+    "timestamp": "2026-07-29T15:26:37.140199",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1502,
+    "response_tokens": 109,
+    "total_tokens": 1611
+  },
+  {
+    "timestamp": "2026-07-29T15:26:41.790298",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1636,
+    "response_tokens": 109,
+    "total_tokens": 1745
+  },
+  {
+    "timestamp": "2026-07-30T09:13:42.055029",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1539,
+    "response_tokens": 94,
+    "total_tokens": 1633
+  },
+  {
+    "timestamp": "2026-07-30T09:13:47.273789",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1549,
+    "response_tokens": 100,
+    "total_tokens": 1649
+  },
+  {
+    "timestamp": "2026-07-30T09:13:52.225416",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1365,
+    "response_tokens": 98,
+    "total_tokens": 1463
+  },
+  {
+    "timestamp": "2026-07-30T09:13:58.058057",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1494,
+    "response_tokens": 115,
+    "total_tokens": 1609
+  },
+  {
+    "timestamp": "2026-07-30T09:14:03.727671",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1464,
+    "response_tokens": 113,
+    "total_tokens": 1577
+  },
+  {
+    "timestamp": "2026-07-30T09:15:19.819395",
+    "agent": "PlanningAgent",
+    "prompt_tokens": 277,
+    "response_tokens": 26,
+    "total_tokens": 303
+  },
+  {
+    "timestamp": "2026-07-30T09:26:25.650448",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1299,
+    "response_tokens": 98,
+    "total_tokens": 1397
+  },
+  {
+    "timestamp": "2026-07-30T09:26:30.638789",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1711,
+    "response_tokens": 119,
+    "total_tokens": 1830
+  },
+  {
+    "timestamp": "2026-07-30T09:26:35.115265",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1524,
+    "response_tokens": 106,
+    "total_tokens": 1630
+  },
+  {
+    "timestamp": "2026-07-30T09:26:39.600424",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1382,
+    "response_tokens": 95,
+    "total_tokens": 1477
+  },
+  {
+    "timestamp": "2026-07-30T09:26:43.723756",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1391,
+    "response_tokens": 103,
+    "total_tokens": 1494
+  },
+  {
+    "timestamp": "2026-07-30T09:56:34.750090",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 594,
+    "response_tokens": 16,
+    "total_tokens": 610
   }
 ]

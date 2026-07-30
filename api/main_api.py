@@ -3,7 +3,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-
+from fastapi.responses import RedirectResponse
+import os
 from agents.orchestrator_agent import OrchestratorAgent
 from utils.token_tracker import get_summary, get_last_call_tokens
 from utils.settings import is_debug_enabled, set_debug
@@ -89,7 +90,28 @@ class LoginRequest(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+    
+class ForgotPasswordRequest(BaseModel):
+    email: str
 
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+@app.post("/api/auth/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest):
+    auth_module.request_password_reset(payload.email)
+    return {"message": "If an account exists with this email, a reset link has been sent."}
+
+
+@app.post("/api/auth/reset-password")
+def reset_password_route(payload: ResetPasswordRequest):
+    try:
+        return auth_module.reset_password(payload.token, payload.new_password)
+    except AuthError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/api/auth/signup")
 def signup(payload: SignupRequest):
@@ -143,6 +165,9 @@ def google_oauth_connect(current_user: dict = Depends(get_current_user)):
     return {"authorization_url": url}
 
 
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+
 @app.get("/api/oauth/google/callback")
 def google_oauth_callback(code: str, state: str):
     """
@@ -153,15 +178,16 @@ def google_oauth_callback(code: str, state: str):
     itself is what proves which of our users this belongs to.
     """
     try:
-        result = google_oauth.exchange_code_for_tokens(code, state)
+        google_oauth.exchange_code_for_tokens(code, state)
     except GoogleOAuthError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # Même logique : on redirige vers le frontend avec l'erreur en
+        # query param plutôt que de renvoyer du JSON brut — l'utilisateur
+        # est dans son navigateur, pas dans un client API.
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}/integrations?google=error&detail={e}"
+        )
 
-    # In a real deployment, redirect back to a frontend page instead of
-    # returning raw JSON (e.g. RedirectResponse to FRONTEND_URL + "/settings?google=connected").
-    # Kept as JSON for now since the frontend flow isn't built yet.
-    return result
-
+    return RedirectResponse(url=f"{FRONTEND_URL}/integrations?google=connected")
 
 @app.get("/api/oauth/google/status")
 def google_oauth_status(current_user: dict = Depends(get_current_user)):
@@ -419,11 +445,25 @@ def chat(
     # impersonation issue in the previous version of this route.
     # ---------------------------------------------------------------
     client_email = current_user["email"]
+    if getattr(orchestrator, "client_user_id", None) != current_user["id"]:
+        memory = get_client_memory(client_email)
+        orchestrator.commercial_history = memory["history"].copy()
+        orchestrator.client_email = client_email
+        orchestrator.client_user_id = current_user["id"]
+        # état de routing propre à l'ancien occupant de cette session : à
+        # remettre à zéro aussi, sinon un reliquat de "awaiting_clarification"
+        # ou "last_route" d'un autre utilisateur pourrait influencer le
+        # premier message du nouvel utilisateur sur cette session.
+        orchestrator.last_route = "commercial"
+        orchestrator.awaiting_clarification = False
+        orchestrator.last_reply_mode = "existing"
 
+    quota_status = check_quota(client_email)
     if is_new_session:
         memory = get_client_memory(client_email)
         orchestrator.commercial_history = memory["history"].copy()
         orchestrator.client_email = client_email
+        orchestrator.client_user_id = current_user["id"]
 
     quota_status = check_quota(client_email)
     if not quota_status["allowed"]:

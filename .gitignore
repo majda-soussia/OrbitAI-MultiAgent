@@ -10,6 +10,8 @@ config/credentials..json
 config/token.json
 config/client_secret.json
 config/client_secret_web.json 
+data/token_usage.json
+
 # Environment
 .env
 node_modules/

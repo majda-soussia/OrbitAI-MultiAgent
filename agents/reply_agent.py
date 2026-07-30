@@ -162,14 +162,21 @@ class ReplyAgent(BaseAgent):
 
         return draft
 
-    def get_raw_email_list(self, max_results=5, force_login: bool = False) -> list:
+    def get_raw_email_list(self, max_results=5, user_id: int = None, force_login: bool = False) -> list:
+
         email_agent = EmailAgent()
-        service = email_agent.get_gmail_service(force_login=force_login)
+        if user_id is not None:
+            service = email_agent.get_gmail_service_for_user(user_id)
+        else:
+            service = email_agent.get_gmail_service(force_login=force_login)
         return email_agent.get_recent_emails(service, max_results)
 
-    def search_raw_email_list(self, query: str, max_results=5, force_login: bool = False) -> list:
+    def search_raw_email_list(self, query: str, max_results=5, user_id: int = None, force_login: bool = False) -> list:
         email_agent = EmailAgent()
-        service = email_agent.get_gmail_service(force_login=force_login)
+        if user_id is not None:
+            service = email_agent.get_gmail_service_for_user(user_id)
+        else:
+            service = email_agent.get_gmail_service(force_login=force_login)
         return email_agent.search_emails(service, query, max_results)
 
     def analyze_and_draft(self, email: dict) -> dict:

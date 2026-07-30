@@ -5,7 +5,7 @@ from agents.email_agent import EmailAgent
 from agents.planning_agent import PlanningAgent
 from agents.commercial_agent import OFF_TOPIC_REFUSAL, CommercialAgent
 from agents.reply_agent import ReplyAgent
-
+from utils.google_oauth import GoogleOAuthError
 ORBIT_JARGON_PATTERNS = [
     r"\bEMS\b", r"\bOEE\b", r"\bESG\b", r"\bSCADA\b", r"\bPLC\b", r"\bMES\b",
     r"\bKPI(s)?\b", r"\bIoT\b", r"\bROI\b", r"\bTHD\b", r"\bISO\s?50001\b",
@@ -25,6 +25,7 @@ REPLY_TO_EXISTING_PATTERNS = [
     r"\bdonn\w*\b.{0,20}\br[ée]pon[cs]e\b",
     r"\bla r[ée]pon[cs]e (de|à|a|pour)\b",
 ]
+
 REPLY_TO_EXISTING_REGEX = re.compile("|".join(REPLY_TO_EXISTING_PATTERNS), re.IGNORECASE)
 
 # ".{0,25}" tolère des mots intercalés ("a formal email", "an urgent
@@ -54,6 +55,12 @@ PLANNING_PATTERNS = [
     r"\bbriefing\b", r"\bconflits? d'horaire\b", r"\bschedule conflicts?\b",
 ]
 PLANNING_REGEX = re.compile("|".join(PLANNING_PATTERNS), re.IGNORECASE)
+ALL_EMAILS_PATTERNS = [
+    r"\ball (of )?(my |the )?emails?\b", r"\beach email\b", r"\bevery email\b",
+    r"\btous les emails?\b", r"\btous mes emails?\b", r"\bchaque email\b",
+    r"\btoutes mes réponses\b",
+]
+ALL_EMAILS_REGEX = re.compile("|".join(ALL_EMAILS_PATTERNS), re.IGNORECASE)
 
 ROUTER_CLASSIFIER_PROMPT = """You are a routing classifier for a multi-agent business assistant
 called Orbit AI. There are four specialized agents:
@@ -124,6 +131,7 @@ class OrchestratorAgent(BaseAgent):
 
         self.commercial_history = []
         self.last_route = "commercial"
+        self.client_user_id = None
         # Vrai si le dernier message du Reply Agent était une question de
         # clarification ("qui est concerné ?", "quel est le sujet ?") —
         # dans ce cas, le PROCHAIN message doit rester routé vers "reply"
@@ -131,6 +139,14 @@ class OrchestratorAgent(BaseAgent):
         # planning ("meeting", "tomorrow at 10 AM"), car il répond
         # simplement à cette question, ce n'est pas un nouveau sujet.
         self.awaiting_clarification = False
+    SIGNUP_REQUIRED_MESSAGE = (
+        "This feature requires an account. Please sign up or log in to access "
+        "your own Gmail and Calendar data."
+    )
+    NOT_CONNECTED_MESSAGE = (
+            "To use this feature, please connect your Google account first "
+            "(Gmail and Calendar access) from the Integrations page."
+        )
     @staticmethod
     def _matches_reply_existing(message: str) -> bool:
         return bool(REPLY_TO_EXISTING_REGEX.search(message))
@@ -200,15 +216,67 @@ class OrchestratorAgent(BaseAgent):
         self.last_route = target
         self.awaiting_clarification = False
         return target
-    def _handle_reply_request(self, message: str, force_final: bool = False) -> str:
+    def run(self, message: str) -> dict:
+        target = self.route(message)
+        user_id = getattr(self, "client_user_id", None)
+
+        if target == "email":
+            # SECURITY: never fall back to a shared/default Google token.
+            # Without a real authenticated user_id, this must refuse —
+            # not silently read someone else's inbox (this was a real
+            # data-leak bug: guests were able to read the developer's
+            # own Gmail through this exact code path).
+            if user_id is None:
+                return {"agent": "email", "response": self.SIGNUP_REQUIRED_MESSAGE}
+            try:
+                results = self.email_agent.run_for_user(user_id, max_results=5)
+            except GoogleOAuthError:
+                return {"agent": "email", "response": self.NOT_CONNECTED_MESSAGE}
+            return {"agent": "email", "response": results}
+
+        if target == "reply":
+            force_final = getattr(self, "awaiting_clarification", False)
+
+            # Only the "compose from text" mode can work without Gmail
+            # access. Any mode that needs to read an existing email
+            # requires a real connected account.
+            if user_id is None and getattr(self, "last_reply_mode", "existing") != "compose":
+                return {"agent": "reply", "response": self.SIGNUP_REQUIRED_MESSAGE}
+
+            try:
+                response = self._handle_reply_request(
+                    message, user_id=user_id, force_final=force_final
+                )
+            except GoogleOAuthError:
+                return {"agent": "reply", "response": self.NOT_CONNECTED_MESSAGE}
+
+            self.awaiting_clarification = ("?" in response) and not force_final
+            return {"agent": "reply", "response": response}
+
+        if target == "planning":
+            if user_id is None:
+                return {"agent": "planning", "response": self.SIGNUP_REQUIRED_MESSAGE}
+            try:
+                result = self.planning_agent.run_for_user(user_id)
+            except GoogleOAuthError:
+                return {"agent": "planning", "response": self.NOT_CONNECTED_MESSAGE}
+            return {"agent": "planning", "response": result["briefing"], "details": result}
+
+        response = self.commercial_agent.run(message, self.commercial_history)
+
+        if response != OFF_TOPIC_REFUSAL:
+            self.commercial_history.append({"role": "user", "content": message})
+            self.commercial_history.append({"role": "assistant", "content": response})
+
+        return {"agent": "commercial", "response": response}
+    def _handle_reply_request(self, message: str, user_id: int = None, force_final: bool = False) -> str:
         if getattr(self, "last_reply_mode", "existing") == "compose":
             return self.reply_agent.draft_from_text(message, force_final=force_final)
-        emails = self.reply_agent.get_raw_email_list(max_results=5)
-
+        emails = self.reply_agent.get_raw_email_list(max_results=5, user_id=user_id)
         if not emails:
             return "I couldn't find any recent emails to reply to."
 
-        if self.ALL_EMAILS_PATTERNS.search(message):
+        if ALL_EMAILS_REGEX.search(message):
             drafts = []
             for email in emails:
                 result = self.reply_agent.analyze_and_draft(email)
@@ -237,36 +305,7 @@ class OrchestratorAgent(BaseAgent):
                 )
 
         return "None of your 5 most recent emails currently need a reply."
-    def run(self, message: str) -> dict:
-        target = self.route(message)
-
-        if target == "email":
-            results = self.email_agent.run(
-                max_results=5,
-                email=getattr(self, "client_email", None)
-            )
-            return {"agent": "email", "response": results}
-
-        if target == "reply":
-            force_final = getattr(self, "awaiting_clarification", False)
-            response = self._handle_reply_request(message, force_final=force_final)
-
-            self.awaiting_clarification = ("?" in response) and not force_final
-            return {"agent": "reply", "response": response}
-        if target == "planning":
-            result = self.planning_agent.run(
-                email=getattr(self, "client_email", None)
-            )
-            return {"agent": "planning", "response": result["briefing"], "details": result}
-        response = self.commercial_agent.run(message, self.commercial_history)
-
-        if response != OFF_TOPIC_REFUSAL:
-            self.commercial_history.append({"role": "user", "content": message})
-            self.commercial_history.append({"role": "assistant", "content": response})
-
-        return {"agent": "commercial", "response": response}
-
-
+    
 if __name__ == "__main__":
     print("Orbit AI Assistant — Orchestrator")
     print("=" * 50)

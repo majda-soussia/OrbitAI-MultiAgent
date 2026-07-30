@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function LoginPage() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+export default function ForgotPasswordPage() {
+  const { forgotPassword } = useAuth();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,10 +16,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email.trim(), password);
-      navigate("/chat");
+      await forgotPassword(email.trim());
+      // On affiche le même message de succès que la requête ait abouti
+      // ou non côté backend (le backend lui-même ne révèle jamais si
+      // l'email existe) — évite toute fuite d'info côté UI aussi.
+      setSubmitted(true);
     } catch (err) {
-      setError(err.message || "Unable to sign in.");
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -29,50 +31,43 @@ export default function LoginPage() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.title}>Sign In</h1>
-        <p style={styles.subtitle}>Access your Orbit AI Assistant account</p>
+        <h1 style={styles.title}>Forgot Password</h1>
+        <p style={styles.subtitle}>
+          Enter your email and we'll send you a reset link
+        </p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="you@company.com"
-              autoComplete="email"
-            />
-          </label>
+        {submitted ? (
+          <div style={styles.success}>
+            If an account exists with this email, a reset link has been sent.
+            Check your inbox.
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <label style={styles.label}>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                style={styles.input}
+                placeholder="you@company.com"
+                autoComplete="email"
+              />
+            </label>
 
-          <label style={styles.label}>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="••••••••"
-              autoComplete="current-password"
-            />
-          </label>
-          <Link to="/forgot-password" style={styles.forgotLink}>
-            Forgot your password?
-          </Link>
+            {error && <div style={styles.error}>{error}</div>}
 
-          {error && <div style={styles.error}>{error}</div>}
-
-          <button type="submit" style={styles.button} disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
+            <button type="submit" style={styles.button} disabled={loading}>
+              {loading ? "Sending..." : "Send Reset Link"}
+            </button>
+          </form>
+        )}
 
         <p style={styles.footerText}>
-          Don't have an account?{" "}
-          <Link to="/signup" style={styles.link}>
-            Create one
+          Remembered your password?{" "}
+          <Link to="/login" style={styles.link}>
+            Sign in
           </Link>
         </p>
       </div>
@@ -146,6 +141,14 @@ const styles = {
     borderRadius: 8,
     fontSize: 13,
   },
+  success: {
+    background: "#f0fdf4",
+    color: "#16a34a",
+    padding: "12px 14px",
+    borderRadius: 8,
+    fontSize: 13,
+    lineHeight: 1.5,
+  },
   footerText: {
     marginTop: 20,
     fontSize: 13,
@@ -156,12 +159,5 @@ const styles = {
     color: "#2563eb",
     fontWeight: 500,
     textDecoration: "none",
-  },
-  forgotLink: {
-    fontSize: 13,
-    color: "#2563eb",
-    textDecoration: "none",
-    alignSelf: "flex-end",
-    marginTop: -8,
   },
 };

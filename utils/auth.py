@@ -198,8 +198,76 @@ def verify_email(token: str) -> dict:
         conn.close()
 
     return {"email": user["email"], "message": "Email verified successfully. You can now log in."}
+RESET_TOKEN_EXPIRE_MINUTES = int(os.environ.get("RESET_TOKEN_EXPIRE_MINUTES", 30))
 
 
+def _send_password_reset_email(email: str, reset_token: str, is_new_account: bool = False) -> None:
+    link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
+    if is_new_account:
+        subject = "Set your password — Orbit AI Assistant"
+        intro = "An account has been created for you at Orbit AI Assistant."
+    else:
+        subject = "Reset your password — Orbit AI Assistant"
+        intro = "We received a request to reset your password."
+
+    body = (
+        f"{intro}\n\n"
+        f"Click this link to set a new password "
+        f"(valid for {RESET_TOKEN_EXPIRE_MINUTES} minutes):\n{link}\n\n"
+        f"This link can only be used once. If you did not request this, "
+        f"you can safely ignore this email."
+    )
+    _send_email(email, subject, body)
+
+
+def request_password_reset(email: str, is_new_account: bool = False) -> None:
+    email = email.strip().lower()
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET reset_token = %s, reset_token_expires = %s "
+            "WHERE email = %s RETURNING id;",
+            (reset_token, expires_at, email),
+        )
+        user = cur.fetchone()
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+    if user:
+        _send_password_reset_email(email, reset_token, is_new_account=is_new_account)
+
+
+def reset_password(token: str, new_password: str) -> dict:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, email FROM users "
+            "WHERE reset_token = %s AND reset_token_expires > now();",
+            (token,),
+        )
+        user = cur.fetchone()
+        if not user:
+            raise InvalidToken("Invalid or expired password reset link.")
+
+        new_hash = hash_password(new_password)
+        cur.execute(
+            "UPDATE users SET password_hash = %s, reset_token = NULL, "
+            "reset_token_expires = NULL, email_verified = true WHERE id = %s;",
+            (new_hash, user["id"]),
+        )
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+    return {"email": user["email"], "message": "Password set successfully. You can now log in."}
 # ---------- Login ----------
 
 def login(email: str, password: str) -> dict:

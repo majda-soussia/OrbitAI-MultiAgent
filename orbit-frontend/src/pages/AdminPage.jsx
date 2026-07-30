@@ -47,8 +47,7 @@ export default function AdminPage() {
     await setClientPlan(email, "standard", accessToken);
     await refresh();
   }
-
-  if (loading) return <div style={styles.container}>Chargement...</div>;
+  if (loading) return <div style={styles.container}>Loading...</div>;
 
   const maxTokens = tokens
   ? Math.max(...Object.values(tokens.by_agent), 1)
@@ -66,14 +65,14 @@ export default function AdminPage() {
     <div style={styles.container}>
       <div style={styles.headerRow}>
         <div>
-          <h1 style={{ margin: 0 }}>Orbit admin dashboard</h1>
+          <h1 style={{ margin: 0 }}>Orbit Admin Dashboard</h1>
           <p style={{ margin: "4px 0 0", fontSize: 14, color: "#64748b" }}>
-            Vue d'ensemble de l'activité des agents en temps réel
+            Overview of agent activity in real time
           </p>
         </div>
         <button style={styles.refreshBtn} onClick={refresh}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Rafraîchir
+          Refresh
         </button>
       </div>
 
@@ -83,34 +82,34 @@ export default function AdminPage() {
           <div style={styles.metricIconWrap}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </div>
-          <p style={styles.metricLabel}>Appels LLM</p>
+          <p style={styles.metricLabel}>LLM Calls</p>
           <p style={styles.metricValue}>{tokens?.total_calls ?? 0}</p>
         </div>
         <div style={styles.metricCard}>
           <div style={styles.metricIconWrap}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><circle cx="8" cy="8" r="6"/><circle cx="16" cy="16" r="6" opacity="0.5"/></svg>
           </div>
-          <p style={styles.metricLabel}>Tokens totaux</p>
+          <p style={styles.metricLabel}>Total Tokens</p>
           <p style={styles.metricValue}>{(tokens?.total_tokens ?? 0).toLocaleString()}</p>
         </div>
         <div style={styles.metricCard}>
           <div style={styles.metricIconWrap}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
-          <p style={styles.metricLabel}>Sessions actives</p>
+          <p style={styles.metricLabel}>Active Sessions</p>
           <p style={styles.metricValue}>{Object.keys(sessions ?? {}).length}</p>
         </div>
         <div style={styles.metricCard}>
           <div style={styles.metricIconWrap}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 8h2M19 12h3M19 16h2M3 8h2M2 12h3M3 16h2M9 4l1 2M14 4l-1 2"/></svg>
           </div>
-          <p style={styles.metricLabel}>Debug mode</p>
+          <p style={styles.metricLabel}>Debug Mode</p>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
             <div onClick={handleToggleDebug} style={{ ...styles.toggle, background: debug ? "#2563eb" : "#e2e8f0", cursor: "pointer" }}>
               <div style={{ ...styles.toggleThumb, transform: debug ? "translateX(20px)" : "translateX(2px)" }} />
             </div>
             <span style={{ fontSize: 13, color: debug ? "#2563eb" : "#64748b", fontWeight: 500 }}>
-              {debug ? "Activé" : "Désactivé"}
+              {debug ? "Activé" : "Disabled"}
             </span>
           </div>
         </div>
@@ -119,10 +118,10 @@ export default function AdminPage() {
       {/* Budget tokens clients */}
       {clients && Object.keys(clients).length > 0 && (
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Budget de tokens clients</h3>
+          <h3 style={styles.cardTitle}>Client Token Budget</h3>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748b", marginBottom: 6 }}>
-            <span>{totalUsed.toLocaleString()} tokens utilisés</span>
-            <span>{totalBudget.toLocaleString()} budget total</span>
+            <span>{totalUsed.toLocaleString()} tokens used</span>
+            <span>{totalBudget.toLocaleString()} total budget</span>
           </div>
           <div style={styles.barTrackLarge}>
             <div style={{
@@ -139,7 +138,7 @@ export default function AdminPage() {
       {/* Tokens par agent */}
       <div style={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={styles.cardTitle}>Tokens par agent</h3>
+          <h3 style={styles.cardTitle}>Tokens by Agent</h3>
           <span style={{ fontSize: 13, color: "#94a3b8" }}>{Object.keys(tokens.by_agent).length} agents</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -161,17 +160,16 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Sessions actives */}
       <div style={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={styles.cardTitle}>Sessions actives</h3>
-          <span style={{ fontSize: 13, color: "#94a3b8" }}>{Object.keys(sessions).length} en cours</span>
+          <h3 style={styles.cardTitle}>Active Sessions</h3>
+          <span style={{ fontSize: 13, color: "#94a3b8" }}>{Object.keys(sessions).length} active</span>
         </div>
         {Object.entries(sessions).map(([sid, data]) => (
           <div key={sid} style={styles.sessionRow}>
             <div>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>
-                {data.email || "Anonyme"}
+                {data.email || "Anonymous"}
               </p>
               <p style={{ margin: 0, fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>
                 {sid.slice(0, 13)}...
@@ -193,7 +191,7 @@ export default function AdminPage() {
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 14, fontWeight: 500 }}>{email}</span>
-                  <span style={profile.plan === "premium" ? styles.badgePremium : styles.badgeStandard}>
+                  <span style={profile.plan === "Upgrade" ? styles.badgePremium : styles.badgeStandard}>
                     {profile.plan}
                   </span>
                 </div>
@@ -218,7 +216,7 @@ export default function AdminPage() {
                   </button>
                 ) : (
                   <button style={styles.downgradeBtn} onClick={() => handleDowngrade(email)}>
-                    → Standard
+                    Downgrade
                   </button>
                 )}
               </div>

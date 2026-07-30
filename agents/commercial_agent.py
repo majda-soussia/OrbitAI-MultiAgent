@@ -1,6 +1,12 @@
-import json
 from agents.base_agent import BaseAgent
+from utils.settings import is_debug_enabled
 import re
+RAG_RELEVANCE_THRESHOLD = 0.68
+SPEC_KEYWORDS = [
+    "spec", "specs", "specification", "compatib", "integrat", "protocol",
+    "capacity", "sensor", "capteur", "meter", "compteur", "combien de",
+    "support", "installation", "delay", "délai", "warranty", "garantie",
+]
 ORBIT_JARGON_TERMS = [
     r"\bEMS\b", r"\bOEE\b", r"\bESG\b", r"\bSCADA\b", r"\bPLC\b", r"\bMES\b",
     r"\bKPI(s)?\b", r"\bIoT\b", r"\bROI\b", r"\bTHD\b", r"\bISO\s?50001\b",
@@ -24,6 +30,11 @@ HARD_OFF_TOPIC_REGEX = re.compile("|".join(HARD_OFF_TOPIC_PATTERNS), re.IGNORECA
 OFF_TOPIC_REFUSAL = (
     "Sorry, I am the Orbit AI Assistant and I can only answer questions related to "
     "Orbit products, Industry 4.0, Energy Management and Industrial IoT."
+)
+NO_SPECIFIC_INFO_FALLBACK = (
+    "That's a great question, but I don't have the precise details on hand to answer "
+    "it accurately right now. Let me connect you with a member of our team who can give "
+    "you exact information — could you share your email or preferred contact method?"
 )
 
 TOPIC_CLASSIFIER_PROMPT = """You are a strict topic classifier for a B2B industrial sales assistant.
@@ -78,15 +89,25 @@ PRICING_KEYWORDS = [
 def needs_pricing_context(question: str) -> bool:
     q_lower = question.lower()
     return any(kw in q_lower for kw in PRICING_KEYWORDS)
+def needs_specific_data(question: str) -> bool:
+    """Question factuelle précise (prix ou specs techniques) — c'est
+    seulement pour ce type de question qu'un manque de contexte RAG doit
+    déclencher le message explicite de transfert, pas pour une question
+    générale ou une salutation où le prompt système suffit."""
+    q_lower = question.lower()
+    return needs_pricing_context(question) or any(kw in q_lower for kw in SPEC_KEYWORDS)
 
+
+def _filter_relevant(results: list, threshold: float = RAG_RELEVANCE_THRESHOLD) -> list:
+    return [r for r in results if r["score"] >= threshold]
 
 def get_rag_context(question: str) -> str:
     from data.rag.retriever import retrieve, build_context_block
 
-    all_results = retrieve(question, top_k=3)
+    all_results = _filter_relevant(retrieve(question, top_k=3))
 
     if needs_pricing_context(question):
-        pricing_results = retrieve(question, top_k=2, type_filter="pricing")
+        pricing_results = _filter_relevant(retrieve(question, top_k=2, type_filter="pricing"))
         # fusion sans doublons, pricing en priorité
         seen_ids = {r["text"] for r in pricing_results}
         merged = pricing_results + [r for r in all_results if r["text"] not in seen_ids]
@@ -164,9 +185,17 @@ class CommercialAgent(BaseAgent):
         except Exception as e:
             print(f"[CommercialAgent] RAG context error: {e}")
             rag_context = ""
-        print("\n=== RAG CONTEXT INJECTÉ ===")
-        print(rag_context if rag_context else "(VIDE)")
-        print("===========================\n")
+
+        if is_debug_enabled():
+            print(f"[DEBUG] RAG context injected:\n{rag_context if rag_context else '(empty)'}")
+
+        if not rag_context and needs_specific_data(user_message):
+            # Question factuelle précise (prix, specs...) mais aucun
+            # chunk pertinent trouvé : on ne laisse jamais le LLM
+            # improviser une réponse générale ici (risque d'invention de
+            # specs/prix) — message explicite + transfert humain.
+            return NO_SPECIFIC_INFO_FALLBACK
+
         augmented_message = (
             f"{rag_context}\n\nCustomer question: {user_message}"
             if rag_context else user_message

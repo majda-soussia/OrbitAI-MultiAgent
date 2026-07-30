@@ -57,6 +57,13 @@ export function AuthProvider({ children }) {
   async function signup(email, password, plan = "standard") {
     return api.signup(email, password, plan);
   }
+  async function forgotPassword(email) {
+    return api.forgotPassword(email);
+  }
+
+  async function resetPassword(resetToken, newPassword) {
+    return api.resetPassword(resetToken, newPassword);
+  }
 
   const value = {
     user,
@@ -67,6 +74,8 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
+    forgotPassword,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

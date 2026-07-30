@@ -38,10 +38,10 @@ export default function ChatPage() {
         { role: "assistant", content: data.response, agent: data.agent },
       ]);
     } catch (err) {
-      console.error("Erreur envoi message:", err);
+      console.error("Message send error:", err);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Erreur de connexion au serveur.", error: true },
+        { role: "assistant", content: "Unable to connect to the server.", error: true },
       ]);
     } finally {
       setLoading(false);
@@ -62,21 +62,21 @@ export default function ChatPage() {
       <div style={styles.header}>
         Orbit AI Assistant
         {isAuthenticated && (
-          <span style={styles.headerSubtitle}>Connecté en tant que {user?.email}</span>
+          <span style={styles.headerSubtitle}> Signed in as  {user?.email}</span>
         )}
       </div>
 
       {!isAuthenticated && !guestQuotaExhausted && (
         <div style={styles.guestBanner}>
-          Vous discutez en mode invité (essai gratuit limité).{" "}
-          <Link to="/signup" style={styles.bannerLink}>Créez un compte</Link> pour un accès complet.
+          You're chatting as a guest (limited free trial).{" "}
+          <Link to="/signup" style={styles.bannerLink}>Create an account</Link> for full access.
         </div>
       )}
 
       <div style={styles.messages}>
         {messages.length === 0 && (
           <div style={styles.placeholder}>
-            Posez une question sur les solutions Orbit (Energy Management, IoT, SCADA...)
+           Ask a question about Orbit solutions (Energy Management, IoT, SCADA...)
           </div>
         )}
         {messages.map((msg, i) => (
@@ -92,7 +92,7 @@ export default function ChatPage() {
             {msg.content}
           </div>
         ))}
-        {loading && <div style={styles.typing}>Orbit réfléchit...</div>}
+        {loading && <div style={styles.typing}>Orbit is thinking...</div>}
         <div ref={bottomRef} />
       </div>
 
@@ -100,10 +100,10 @@ export default function ChatPage() {
         <div style={styles.quotaBar}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#64748b", marginBottom: 4 }}>
             <span>
-              Plan {quota.plan} — {quota.tokens_used.toLocaleString()} / {quota.token_limit.toLocaleString()}{" "}
-              {quota.plan === "guest" ? "messages" : "tokens"}
+              Plan: {quota.plan} — {quota.tokens_used.toLocaleString()} / {quota.token_limit.toLocaleString()}{" "}
+                              {quota.plan === "guest" ? "messages" : "tokens"}
             </span>
-            <span>{quota.remaining.toLocaleString()} restant{quota.remaining > 1 ? "s" : ""}</span>
+            <span>{quota.remaining.toLocaleString()} remaining </span>
           </div>
           <div style={styles.quotaTrack}>
             <div style={{
@@ -118,11 +118,11 @@ export default function ChatPage() {
       {guestQuotaExhausted ? (
         <div style={styles.upgradePrompt}>
           <p style={{ margin: "0 0 10px", fontSize: 14, color: "#334155" }}>
-            Vous avez atteint la limite de l'essai gratuit.
+            You've reached the limit of the free trial.
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-            <Link to="/signup" style={styles.button}>Créer un compte</Link>
-            <Link to="/login" style={styles.secondaryButton}>Se connecter</Link>
+            <Link to="/signup" style={styles.button}>Create Account</Link>
+            <Link to="/login" style={styles.secondaryButton}> Sign In</Link>
           </div>
         </div>
       ) : (
@@ -132,11 +132,11 @@ export default function ChatPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Écrivez votre message..."
+            placeholder="Type your message..."
             rows={1}
           />
           <button style={styles.button} onClick={handleSend} disabled={loading}>
-            Envoyer
+            Send
           </button>
         </div>
       )}
