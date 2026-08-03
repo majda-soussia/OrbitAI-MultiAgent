@@ -1,20 +1,17 @@
 from agents.base_agent import BaseAgent
 from utils.settings import is_debug_enabled
 import re
-RAG_RELEVANCE_THRESHOLD = 0.68
-SPEC_KEYWORDS = [
-    "spec", "specs", "specification", "compatib", "integrat", "protocol",
-    "capacity", "sensor", "capteur", "meter", "compteur", "combien de",
-    "support", "installation", "delay", "délai", "warranty", "garantie",
-]
+
 ORBIT_JARGON_TERMS = [
     r"\bEMS\b", r"\bOEE\b", r"\bESG\b", r"\bSCADA\b", r"\bPLC\b", r"\bMES\b",
     r"\bKPI(s)?\b", r"\bIoT\b", r"\bROI\b", r"\bTHD\b", r"\bISO\s?50001\b",
     r"\bIEC\s?62443\b", r"\bModbus\b", r"\bOPC-?UA\b", r"\bMQTT\b", r"\bBACnet\b",
     r"\bOrbit\b",
+    r"\bSiemens\b", r"\bWinCC\b", r"\bSchneider(\s?Electric)?\b", r"\bABB\b",
+    r"\bJanitza\b", r"\bHuawei\b", r"\bAtlas\s?Copco\b", r"\bCircutor\b",
+    r"\bCarlo\s?Gavazzi\b",
 ]
 ORBIT_JARGON_REGEX = re.compile("|".join(ORBIT_JARGON_TERMS), re.IGNORECASE)
-
 HARD_OFF_TOPIC_PATTERNS = [
     r"\bexam(e|s|en)?\b",
     r"\bhomework\b",
@@ -30,11 +27,6 @@ HARD_OFF_TOPIC_REGEX = re.compile("|".join(HARD_OFF_TOPIC_PATTERNS), re.IGNORECA
 OFF_TOPIC_REFUSAL = (
     "Sorry, I am the Orbit AI Assistant and I can only answer questions related to "
     "Orbit products, Industry 4.0, Energy Management and Industrial IoT."
-)
-NO_SPECIFIC_INFO_FALLBACK = (
-    "That's a great question, but I don't have the precise details on hand to answer "
-    "it accurately right now. Let me connect you with a member of our team who can give "
-    "you exact information — could you share your email or preferred contact method?"
 )
 
 TOPIC_CLASSIFIER_PROMPT = """You are a strict topic classifier for a B2B industrial sales assistant.
@@ -58,7 +50,10 @@ messages that MUST be classified in_scope: true:
 - "How much does it cost?" / "How much does Orbit cost?" (in_scope: true — pricing question)
 - "What do you offer in your industry?" (in_scope: true)
 - "Can you tell me more?" (in_scope: true — follow-up, assume it continues the commercial topic)
-
+- "Are you compatible with [any industrial hardware/software brand, e.g. a specific PLC,
+  SCADA system, or sensor manufacturer]?" (in_scope: true — compatibility/integration
+  questions are core B2B sales questions, even naming a competitor's or a third-party
+  vendor's product, and even with no other Orbit-specific keyword in the sentence)
 IMPORTANT: If the latest message looks like a natural follow-up to an ongoing
 Orbit conversation (asking to clarify an acronym, asking "how does that work",
 asking what tools/technology are used, asking for more detail, even with typos
@@ -81,25 +76,66 @@ Latest user message: "{message}"
 Respond with ONLY this JSON, nothing else:
 {{"in_scope": true or false, "reason": "one short sentence"}}
 """
+
 PRICING_KEYWORDS = [
     "prix", "coût", "cout", "tarif", "tarifs", "devis", "budget",
     "combien", "price", "cost", "quotation", "pricing"
 ]
 
+# Score cosinus minimal (vecteurs normalisés, IndexFlatIP) pour qu'un
+# chunk soit considéré comme réellement pertinent — retrieve() renvoie
+# toujours ses top_k voisins les plus proches, pertinents ou non, donc
+# sans ce seuil on ne peut jamais détecter un cas de "aucune info trouvée".
+# Calibré empiriquement le 2026-07-30 avec check_rag_scores.py :
+# questions pertinentes ~0.69-0.72, hors-sujet ~0.59-0.66. Valeur choisie
+# au milieu de cet écart. À revalider si le corpus data/rag/sources/
+# change significativement, ou si tu observes des faux positifs/négatifs
+# en usage réel (fallback qui se déclenche trop souvent, ou jamais).
+RAG_RELEVANCE_THRESHOLD = 0.68
+
+SPEC_KEYWORDS = [
+    "spec", "specs", "specification", "compatib", "integrat", "protocol",
+    "capacity", "sensor", "capteur", "meter", "compteur", "combien de",
+    "support", "installation", "delay", "délai", "warranty", "garantie",
+    "latence", "vitesse", "précision", "precision", "consommation",
+    "fréquence", "frequence", "bande passante", "portée", "portee",
+    "résolution", "resolution", "autonomie", "durée de vie", "duree de vie",
+    "poids", "dimension", "tension", "voltage", "courant", "ampérage",
+    "débit", "debit", "throughput", "disponibilité", "disponibilite",
+    "uptime", "sla",
+]
+SPEC_UNIT_PATTERN = re.compile(
+    r"\bms\b|milliseconde|\bwatt|\bvolt|\bampère|\bampere|\bghz\b|\bmhz\b|"
+    r"\bkg\b|\bmm\b|\bcm\b|\bmaximal|\bminimal|\bexact|\bpr[ée]cis|\bspécifiqu|\bspecifiqu",
+    re.IGNORECASE,
+)
+NO_SPECIFIC_INFO_FALLBACK = (
+    "That's a great question, but I don't have the precise details on hand to answer "
+    "it accurately right now. Let me connect you with a member of our team who can give "
+    "you exact information — could you share your email or preferred contact method?"
+)
+
+
 def needs_pricing_context(question: str) -> bool:
     q_lower = question.lower()
     return any(kw in q_lower for kw in PRICING_KEYWORDS)
+
+
 def needs_specific_data(question: str) -> bool:
     """Question factuelle précise (prix ou specs techniques) — c'est
     seulement pour ce type de question qu'un manque de contexte RAG doit
     déclencher le message explicite de transfert, pas pour une question
     générale ou une salutation où le prompt système suffit."""
     q_lower = question.lower()
-    return needs_pricing_context(question) or any(kw in q_lower for kw in SPEC_KEYWORDS)
-
+    return (
+        needs_pricing_context(question)
+        or any(kw in q_lower for kw in SPEC_KEYWORDS)
+        or bool(SPEC_UNIT_PATTERN.search(question))
+    )
 
 def _filter_relevant(results: list, threshold: float = RAG_RELEVANCE_THRESHOLD) -> list:
     return [r for r in results if r["score"] >= threshold]
+
 
 def get_rag_context(question: str) -> str:
     from data.rag.retriever import retrieve, build_context_block
@@ -114,19 +150,22 @@ def get_rag_context(question: str) -> str:
         return build_context_block(merged[:4])
 
     return build_context_block(all_results)
+
+
 class CommercialAgent(BaseAgent):
     max_tokens = 250
+
     def __init__(self, config_path="config/llm.yaml"):
         with open("prompts/commercial.txt", "r", encoding="utf-8") as f:
             self.system_prompt = f.read()
 
         super().__init__(config_path)
+        # faq_objections.json et sector_qualification.json sont déjà
+        # indexés dans FAISS (data/rag/index/) et accessibles via
+        # get_rag_context() — les recharger ici en JSON brut était du
+        # code mort (jamais utilisé) et un point de crash inutile au
+        # démarrage de l'agent.
 
-        with open("data/rag/sources/faq_objections.json", "r", encoding="utf-8") as f:
-            self.faq_data = json.load(f)
-
-        with open("data/rag/sources/sector_qualification.json", "r", encoding="utf-8") as f:
-            self.sector_data = json.load(f)
     @staticmethod
     def _matches_jargon_allowlist(message: str) -> bool:
         return bool(ORBIT_JARGON_REGEX.search(message))
@@ -174,6 +213,7 @@ class CommercialAgent(BaseAgent):
         result = self.parse_json_response(raw, fallback={"in_scope": True, "reason": "parse_error"})
 
         return bool(result.get("in_scope", True))
+
     def run(self, user_message: str, history: list = None) -> str:
         history = history or []
 
@@ -191,9 +231,10 @@ class CommercialAgent(BaseAgent):
 
         if not rag_context and needs_specific_data(user_message):
             # Question factuelle précise (prix, specs...) mais aucun
-            # chunk pertinent trouvé : on ne laisse jamais le LLM
-            # improviser une réponse générale ici (risque d'invention de
-            # specs/prix) — message explicite + transfert humain.
+            # chunk suffisamment pertinent trouvé : on ne laisse jamais
+            # le LLM improviser une réponse générale ici (risque
+            # d'invention de specs/prix) — message explicite + transfert
+            # humain à la place.
             return NO_SPECIFIC_INFO_FALLBACK
 
         augmented_message = (
@@ -207,22 +248,24 @@ class CommercialAgent(BaseAgent):
         )
 
         return self.clean_text_response(raw_text)
+
+
 if __name__ == "__main__":
 
     print("Orbit AI Assistant — Commercial Agent")
     print("=" * 50)
 
-    agent = CommercialAgent() # Create the agent
+    agent = CommercialAgent()  # Create the agent
 
-    history = [] # Store the conversation history
+    history = []  # Store the conversation history
 
     while True:
-        user_input = input("\nYou: ") # Read user input
+        user_input = input("\nYou: ")  # Read user input
 
-        if user_input.lower() in ["exit", "quit"]: # Exit the conversation
+        if user_input.lower() in ["exit", "quit"]:  # Exit the conversation
             break
 
-        response = agent.run(user_input, history) # Generate the assistant's response
+        response = agent.run(user_input, history)  # Generate the assistant's response
 
         print(f"\nOrbit AI: {response}")
 

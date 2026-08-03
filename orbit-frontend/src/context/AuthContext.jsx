@@ -18,6 +18,12 @@ export function AuthProvider({ children }) {
     setAccessToken(null);
     setUser(null);
   }, []);
+  useEffect(() => {
+    api.setAuthCallbacks({
+      onRefreshed: (newAccessToken) => setAccessToken(newAccessToken),
+      onExpired: () => logout(),
+    });
+  }, [logout]);
 
   // On mount (or when the token changes), fetch the current user's
   // profile to confirm the stored token is still valid.

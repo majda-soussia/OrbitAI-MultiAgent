@@ -90,6 +90,30 @@ class ReplyAgent(BaseAgent):
 
         return "\n".join(line for i, line in enumerate(lines) if i not in to_remove).strip()
 
+    def revise_draft(self, previous_draft: str, instruction: str) -> str:
+        """Révise un brouillon déjà généré selon une instruction courte
+        (raccourcir, reformuler, changer le ton...), sans redemander le
+        contexte d'origine — celui-ci est déjà contenu dans previous_draft."""
+        user_content = f"""
+        Here is a draft email you previously wrote:
+
+        ---
+        {previous_draft}
+        ---
+
+        The user now wants you to revise it with this instruction:
+        "{instruction}"
+
+        Apply the instruction faithfully (e.g. if asked to shorten it, cut
+        it down significantly while keeping the essential facts and any
+        commitments already made — such as a proposed time or date). Do
+        not invent new facts that weren't in the original draft or the
+        instruction. Return ONLY the revised email text, nothing else.
+        """
+        raw_text = self.call_llm(user_content)
+        draft = self.clean_text_response(raw_text)
+        return self._dedupe_signoff(draft)
+
     def draft_from_text(self, instruction_and_content: str, force_final: bool = False) -> str:
         force_instruction = ""
         if force_final:

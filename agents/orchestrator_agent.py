@@ -27,15 +27,20 @@ REPLY_TO_EXISTING_PATTERNS = [
 ]
 
 REPLY_TO_EXISTING_REGEX = re.compile("|".join(REPLY_TO_EXISTING_PATTERNS), re.IGNORECASE)
-
-# ".{0,25}" tolère des mots intercalés ("a formal email", "an urgent
-# professional email") sans exiger que "email" suive immédiatement le verbe.
+REPLY_MODIFY_PATTERNS = [
+    r"\bmodifier\b.{0,25}\be?-?mail\b", r"\braccourci(r|s)?\b",
+    r"\bplus court(e)?\b", r"\breformul(er|e)\b", r"\brevoir\b.{0,25}\be?-?mail\b",
+    r"\bcorriger\b.{0,25}\be?-?mail\b", r"\badapter\b.{0,25}\be?-?mail\b",
+    r"\bshorten\b", r"\bmake it shorter\b", r"\brewrite\b", r"\breword\b",
+]
+REPLY_MODIFY_REGEX = re.compile("|".join(REPLY_MODIFY_PATTERNS), re.IGNORECASE)
 REPLY_COMPOSE_PATTERNS = [
     r"\bwrite\b.{0,25}\bemail\b", r"\bdraft\b.{0,25}\bemail\b",
     r"\bcompose\b.{0,25}\bemail\b", r"\bimprove\b.{0,25}\bemail\b",
     r"\bauto-?reply\b", r"\bdraft a reply\b", r"\bwrite a reply\b",
     r"\bprepare a reply\b", r"\bdraft response\b",
-    r"\brédiger (un|le|mon) e?-?mail\b", r"\bécrire (un|le|mon) e?-?mail\b",
+    r"\bréd(?:ige|iger|igez|igeons)\b.{0,25}\be?-?mail\b",
+    r"\bécri(?:s|re|vez|vons)\b.{0,25}\be?-?mail\b",
     r"\baméliorer (cet?|ce) e?-?mail\b", r"\bbrouillon\b",
 ]
 REPLY_COMPOSE_REGEX = re.compile("|".join(REPLY_COMPOSE_PATTERNS), re.IGNORECASE)
@@ -138,7 +143,16 @@ class OrchestratorAgent(BaseAgent):
         # même s'il est long et contient des mots qui ressemblent à du
         # planning ("meeting", "tomorrow at 10 AM"), car il répond
         # simplement à cette question, ce n'est pas un nouveau sujet.
+        self.last_draft_text = None
         self.awaiting_clarification = False
+    def reset_conversation(self):
+        """Vide l'état conversationnel en mémoire de CETTE session (bouton
+        'Nouvelle conversation'). L'appelant (main_api.py) est responsable
+        d'effacer aussi l'historique persistant en base si besoin."""
+        self.commercial_history = []
+        self.last_route = "commercial"
+        self.awaiting_clarification = False
+        self.last_reply_mode = "existing"
     SIGNUP_REQUIRED_MESSAGE = (
         "This feature requires an account. Please sign up or log in to access "
         "your own Gmail and Calendar data."
@@ -190,6 +204,10 @@ class OrchestratorAgent(BaseAgent):
             self.last_reply_mode = "compose"
             self.awaiting_clarification = False
             return "reply"
+        if REPLY_MODIFY_REGEX.search(message) and self.last_route == "reply":
+            self.last_reply_mode = "modify"
+            self.awaiting_clarification = False
+            return "reply"
 
         if self._matches_email(message):
             self.last_route = "email"
@@ -237,9 +255,6 @@ class OrchestratorAgent(BaseAgent):
         if target == "reply":
             force_final = getattr(self, "awaiting_clarification", False)
 
-            # Only the "compose from text" mode can work without Gmail
-            # access. Any mode that needs to read an existing email
-            # requires a real connected account.
             if user_id is None and getattr(self, "last_reply_mode", "existing") != "compose":
                 return {"agent": "reply", "response": self.SIGNUP_REQUIRED_MESSAGE}
 
@@ -251,8 +266,9 @@ class OrchestratorAgent(BaseAgent):
                 return {"agent": "reply", "response": self.NOT_CONNECTED_MESSAGE}
 
             self.awaiting_clarification = ("?" in response) and not force_final
+            if not self.awaiting_clarification:
+                self.last_draft_text = response
             return {"agent": "reply", "response": response}
-
         if target == "planning":
             if user_id is None:
                 return {"agent": "planning", "response": self.SIGNUP_REQUIRED_MESSAGE}
@@ -270,7 +286,16 @@ class OrchestratorAgent(BaseAgent):
 
         return {"agent": "commercial", "response": response}
     def _handle_reply_request(self, message: str, user_id: int = None, force_final: bool = False) -> str:
+        if getattr(self, "last_reply_mode", "existing") == "modify":
+            if not self.last_draft_text:
+                # Rien à réviser (ex: premier message de la session, ou
+                # après un redémarrage du serveur) — on retombe sur une
+                # composition normale plutôt que de planter.
+                return self.reply_agent.draft_from_text(message, force_final=force_final)
+            return self.reply_agent.revise_draft(self.last_draft_text, message)
+
         if getattr(self, "last_reply_mode", "existing") == "compose":
+            return self.reply_agent.draft_from_text(message, force_final=force_final)
             return self.reply_agent.draft_from_text(message, force_final=force_final)
         emails = self.reply_agent.get_raw_email_list(max_results=5, user_id=user_id)
         if not emails:

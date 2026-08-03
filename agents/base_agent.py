@@ -165,6 +165,7 @@ class BaseAgent:
         supprime markdown, emojis, séparateurs indésirables.
         Utile pour Commercial Agent, Reply Agent... pas pour les agents JSON.
         """
+        text = text.strip().strip('"\u201c\u201d\u2018\u2019').strip()
         text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)
         text = re.sub(r'^\|.*\|$', '', text, flags=re.MULTILINE)
         text = re.sub(r'^[\|\-\s:]+$', '', text, flags=re.MULTILINE)

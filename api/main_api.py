@@ -11,7 +11,10 @@ from utils.settings import is_debug_enabled, set_debug
 from utils.client_memory import (
     get_client_memory, save_client_turn, check_quota,
     add_client_tokens, set_client_plan, get_all_clients,
+    clear_client_history, get_memory_enabled, set_memory_enabled,
 )
+from utils.session_store import get_or_create_db_session
+from utils.client_memory import _load_plans
 from utils import auth as auth_module
 from utils.auth import AuthError
 from utils import google_oauth
@@ -250,7 +253,6 @@ def admin_set_plan(payload: PlanUpdate, _admin: dict = Depends(require_admin)):
 @app.get("/api/admin/clients")
 def admin_clients(_admin: dict = Depends(require_admin)):
     """Lists all clients with their plan and token consumption."""
-    from utils.client_memory import _load_plans
 
     clients = get_all_clients()
     plans = _load_plans()
@@ -392,12 +394,18 @@ def chat(
     payload: ChatRequest,
     current_user: dict | None = Depends(get_current_user_optional),
 ):
-    session_id = payload.session_id or str(uuid.uuid4())
-    is_new_session = session_id not in sessions
-    orchestrator = get_or_create_session(session_id)
-
     if not payload.message.strip():
         raise HTTPException(status_code=400, detail="Empty message.")
+
+    if current_user is not None:
+        session_id = get_or_create_db_session(current_user["id"])
+    else:
+        # Invité : pas de compte, donc pas de ligne dans `sessions` — le
+        # schéma actuel reste adapté (uuid généré côté client si absent).
+        session_id = payload.session_id or str(uuid.uuid4())
+
+    is_new_session = session_id not in sessions
+    orchestrator = get_or_create_session(session_id)
 
     # ---------------------------------------------------------------
     # GUEST MODE: no valid JWT provided. Allow a short unauthenticated
@@ -490,3 +498,38 @@ def chat(
         response=response_text,
         quota=quota_status,
     )
+class ResetConversationRequest(BaseModel):
+    session_id: str | None = None
+
+
+class MemoryToggleRequest(BaseModel):
+    enabled: bool
+
+
+@app.post("/api/chat/reset")
+def reset_conversation(
+    payload: ResetConversationRequest,
+    current_user: dict = Depends(get_current_user),
+):
+
+    clear_client_history(current_user["email"])
+
+    if payload.session_id and payload.session_id in sessions:
+        sessions[payload.session_id].reset_conversation()
+
+    return {"message": "Conversation history cleared."}
+
+
+@app.get("/api/chat/memory")
+def get_memory_status(current_user: dict = Depends(get_current_user)):
+    return {"memory_enabled": get_memory_enabled(current_user["email"])}
+
+
+@app.post("/api/chat/memory")
+def toggle_memory(
+    payload: MemoryToggleRequest,
+    current_user: dict = Depends(get_current_user),
+):
+
+    set_memory_enabled(current_user["email"], payload.enabled)
+    return {"memory_enabled": payload.enabled}

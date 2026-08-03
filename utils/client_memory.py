@@ -15,7 +15,7 @@ def _load_plans() -> dict:
 
 def _get_user_by_email(cur, email: str):
     cur.execute(
-        "SELECT id, plan, token_limit, created_at FROM users WHERE email = %s;",
+        "SELECT id, plan, token_limit, created_at, memory_enabled FROM users WHERE email = %s;",
         (email,),
     )
     return cur.fetchone()
@@ -28,7 +28,21 @@ def get_client_memory(client_id: str) -> dict:
         user = _get_user_by_email(cur, client_id)
 
         if not user:
-            return {"history": [], "plan": "standard", "first_seen": None, "last_seen": None}
+            return {
+                "history": [], "plan": "standard", "first_seen": None,
+                "last_seen": None, "memory_enabled": True,
+            }
+
+        memory_enabled = user["memory_enabled"] if user["memory_enabled"] is not None else True
+
+        # Client a désactivé la mémorisation persistante : chaque nouvelle
+        # session repart de zéro, même si d'anciens échanges existent
+        # encore en base (ils ne sont juste plus rechargés).
+        if not memory_enabled:
+            return {
+                "history": [], "plan": user["plan"], "first_seen": None,
+                "last_seen": None, "memory_enabled": False,
+            }
 
         cur.execute(
             """
@@ -49,11 +63,11 @@ def get_client_memory(client_id: str) -> dict:
             "plan": user["plan"],
             "first_seen": user["created_at"].isoformat() if user["created_at"] else None,
             "last_seen": last_seen,
+            "memory_enabled": True,
         }
     finally:
         cur.close()
         conn.close()
-
 
 def save_client_turn(client_id: str, user_message: str, assistant_response: str):
     conn = get_connection()
@@ -66,6 +80,9 @@ def save_client_turn(client_id: str, user_message: str, assistant_response: str)
                 f"No user found with email {client_id}. "
                 f"The user must sign up (and verify their email) before chatting."
             )
+        memory_enabled = user["memory_enabled"] if user["memory_enabled"] is not None else True
+        if not memory_enabled:
+            return
 
         cur.execute(
             """
@@ -78,8 +95,50 @@ def save_client_turn(client_id: str, user_message: str, assistant_response: str)
     finally:
         cur.close()
         conn.close()
+def clear_client_history(client_id: str) -> None:
+    """Efface définitivement l'historique de conversation persistant d'un
+    client (bouton 'Nouvelle conversation'). Ne touche ni au plan, ni aux
+    tokens consommés, ni au compte lui-même — uniquement conversation_history."""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        user = _get_user_by_email(cur, client_id)
+        if not user:
+            return
+        cur.execute("DELETE FROM conversation_history WHERE user_id = %s;", (user["id"],))
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
 
 
+def get_memory_enabled(client_id: str) -> bool:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT memory_enabled FROM users WHERE email = %s;", (client_id,))
+        row = cur.fetchone()
+    finally:
+        cur.close()
+        conn.close()
+
+    if not row or row["memory_enabled"] is None:
+        return True
+    return bool(row["memory_enabled"])
+
+
+def set_memory_enabled(client_id: str, enabled: bool) -> None:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET memory_enabled = %s WHERE email = %s;",
+            (enabled, client_id),
+        )
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
 def set_client_plan(client_id: str, plan: str):
     """Change a client's plan: 'standard' or 'premium'."""
     plans = _load_plans()

@@ -1384,5 +1384,957 @@
     "prompt_tokens": 594,
     "response_tokens": 16,
     "total_tokens": 610
+  },
+  {
+    "timestamp": "2026-07-30T16:32:13.913467",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3312,
+    "response_tokens": 100,
+    "total_tokens": 3412
+  },
+  {
+    "timestamp": "2026-07-30T16:32:37.950548",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 748,
+    "response_tokens": 22,
+    "total_tokens": 770
+  },
+  {
+    "timestamp": "2026-07-30T16:33:00.847228",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3130,
+    "response_tokens": 250,
+    "total_tokens": 3380
+  },
+  {
+    "timestamp": "2026-07-30T16:34:12.224861",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3671,
+    "response_tokens": 103,
+    "total_tokens": 3774
+  },
+  {
+    "timestamp": "2026-07-30T16:35:25.067996",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3526,
+    "response_tokens": 99,
+    "total_tokens": 3625
+  },
+  {
+    "timestamp": "2026-07-30T16:37:52.588903",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3320,
+    "response_tokens": 101,
+    "total_tokens": 3421
+  },
+  {
+    "timestamp": "2026-07-30T16:37:57.846372",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 769,
+    "response_tokens": 17,
+    "total_tokens": 786
+  },
+  {
+    "timestamp": "2026-07-30T16:38:22.978451",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3230,
+    "response_tokens": 250,
+    "total_tokens": 3480
+  },
+  {
+    "timestamp": "2026-07-30T16:41:11.896039",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 596,
+    "response_tokens": 16,
+    "total_tokens": 612
+  },
+  {
+    "timestamp": "2026-07-30T17:00:30.740346",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1319,
+    "response_tokens": 94,
+    "total_tokens": 1413
+  },
+  {
+    "timestamp": "2026-07-30T17:00:35.527689",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1513,
+    "response_tokens": 113,
+    "total_tokens": 1626
+  },
+  {
+    "timestamp": "2026-07-30T17:00:40.851421",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1535,
+    "response_tokens": 127,
+    "total_tokens": 1662
+  },
+  {
+    "timestamp": "2026-07-30T17:00:45.282733",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1465,
+    "response_tokens": 100,
+    "total_tokens": 1565
+  },
+  {
+    "timestamp": "2026-07-30T17:00:49.901712",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1507,
+    "response_tokens": 109,
+    "total_tokens": 1616
+  },
+  {
+    "timestamp": "2026-07-30T17:02:10.113335",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1319,
+    "response_tokens": 94,
+    "total_tokens": 1413
+  },
+  {
+    "timestamp": "2026-07-30T17:02:14.817097",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1513,
+    "response_tokens": 113,
+    "total_tokens": 1626
+  },
+  {
+    "timestamp": "2026-07-30T17:02:20.174956",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1535,
+    "response_tokens": 127,
+    "total_tokens": 1662
+  },
+  {
+    "timestamp": "2026-07-30T17:02:23.645251",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1319,
+    "response_tokens": 94,
+    "total_tokens": 1413
+  },
+  {
+    "timestamp": "2026-07-30T17:02:27.425421",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1465,
+    "response_tokens": 100,
+    "total_tokens": 1565
+  },
+  {
+    "timestamp": "2026-07-30T17:02:31.716964",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1513,
+    "response_tokens": 113,
+    "total_tokens": 1626
+  },
+  {
+    "timestamp": "2026-07-30T17:02:35.872160",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1507,
+    "response_tokens": 109,
+    "total_tokens": 1616
+  },
+  {
+    "timestamp": "2026-07-30T17:02:40.733239",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1535,
+    "response_tokens": 127,
+    "total_tokens": 1662
+  },
+  {
+    "timestamp": "2026-07-30T17:02:44.970080",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1465,
+    "response_tokens": 100,
+    "total_tokens": 1565
+  },
+  {
+    "timestamp": "2026-07-30T17:02:49.606457",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1507,
+    "response_tokens": 109,
+    "total_tokens": 1616
+  },
+  {
+    "timestamp": "2026-07-30T17:03:10.124884",
+    "agent": "PlanningAgent",
+    "prompt_tokens": 277,
+    "response_tokens": 29,
+    "total_tokens": 306
+  },
+  {
+    "timestamp": "2026-07-30T17:06:55.812690",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 623,
+    "response_tokens": 16,
+    "total_tokens": 639
+  },
+  {
+    "timestamp": "2026-07-30T17:06:57.321721",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 732,
+    "response_tokens": 18,
+    "total_tokens": 750
+  },
+  {
+    "timestamp": "2026-07-30T17:07:08.790529",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3369,
+    "response_tokens": 139,
+    "total_tokens": 3508
+  },
+  {
+    "timestamp": "2026-07-30T17:30:30.220929",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 623,
+    "response_tokens": 16,
+    "total_tokens": 639
+  },
+  {
+    "timestamp": "2026-07-30T17:30:32.296853",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 911,
+    "response_tokens": 31,
+    "total_tokens": 942
+  },
+  {
+    "timestamp": "2026-07-30T17:30:43.230663",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3552,
+    "response_tokens": 139,
+    "total_tokens": 3691
+  },
+  {
+    "timestamp": "2026-07-30T17:38:32.012849",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1524,
+    "response_tokens": 106,
+    "total_tokens": 1630
+  },
+  {
+    "timestamp": "2026-07-30T17:42:36.180023",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1411,
+    "response_tokens": 144,
+    "total_tokens": 1555
+  },
+  {
+    "timestamp": "2026-07-30T17:42:39.971690",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1081,
+    "response_tokens": 69,
+    "total_tokens": 1150
+  },
+  {
+    "timestamp": "2026-07-30T17:49:34.470187",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1411,
+    "response_tokens": 144,
+    "total_tokens": 1555
+  },
+  {
+    "timestamp": "2026-07-30T17:49:38.349687",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1138,
+    "response_tokens": 72,
+    "total_tokens": 1210
+  },
+  {
+    "timestamp": "2026-07-30T17:52:38.193483",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1319,
+    "response_tokens": 94,
+    "total_tokens": 1413
+  },
+  {
+    "timestamp": "2026-07-30T17:52:42.729022",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1513,
+    "response_tokens": 107,
+    "total_tokens": 1620
+  },
+  {
+    "timestamp": "2026-07-30T17:52:47.877137",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1535,
+    "response_tokens": 129,
+    "total_tokens": 1664
+  },
+  {
+    "timestamp": "2026-07-30T17:52:52.240918",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1465,
+    "response_tokens": 101,
+    "total_tokens": 1566
+  },
+  {
+    "timestamp": "2026-07-30T17:52:56.596665",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1507,
+    "response_tokens": 109,
+    "total_tokens": 1616
+  },
+  {
+    "timestamp": "2026-07-30T17:53:13.921961",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 939,
+    "response_tokens": 45,
+    "total_tokens": 984
+  },
+  {
+    "timestamp": "2026-07-30T17:54:24.205678",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1411,
+    "response_tokens": 144,
+    "total_tokens": 1555
+  },
+  {
+    "timestamp": "2026-07-30T17:54:28.580663",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1386,
+    "response_tokens": 110,
+    "total_tokens": 1496
+  },
+  {
+    "timestamp": "2026-07-30T17:54:32.431383",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1299,
+    "response_tokens": 98,
+    "total_tokens": 1397
+  },
+  {
+    "timestamp": "2026-07-30T17:54:37.113785",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1711,
+    "response_tokens": 112,
+    "total_tokens": 1823
+  },
+  {
+    "timestamp": "2026-07-30T17:54:41.521050",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1524,
+    "response_tokens": 106,
+    "total_tokens": 1630
+  },
+  {
+    "timestamp": "2026-07-30T17:55:07.990225",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1411,
+    "response_tokens": 144,
+    "total_tokens": 1555
+  },
+  {
+    "timestamp": "2026-07-30T17:55:10.964553",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1138,
+    "response_tokens": 63,
+    "total_tokens": 1201
+  },
+  {
+    "timestamp": "2026-07-30T17:59:19.964374",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1004,
+    "response_tokens": 63,
+    "total_tokens": 1067
+  },
+  {
+    "timestamp": "2026-07-30T18:18:08.342694",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1004,
+    "response_tokens": 74,
+    "total_tokens": 1078
+  },
+  {
+    "timestamp": "2026-07-30T18:18:27.030621",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1004,
+    "response_tokens": 61,
+    "total_tokens": 1065
+  },
+  {
+    "timestamp": "2026-07-30T18:19:00.311869",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1004,
+    "response_tokens": 65,
+    "total_tokens": 1069
+  },
+  {
+    "timestamp": "2026-07-30T18:19:12.023865",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 1086,
+    "response_tokens": 51,
+    "total_tokens": 1137
+  },
+  {
+    "timestamp": "2026-07-30T18:21:01.875025",
+    "agent": "PlanningAgent",
+    "prompt_tokens": 277,
+    "response_tokens": 26,
+    "total_tokens": 303
+  },
+  {
+    "timestamp": "2026-07-31T08:35:09.430862",
+    "agent": "PlanningAgent",
+    "prompt_tokens": 277,
+    "response_tokens": 28,
+    "total_tokens": 305
+  },
+  {
+    "timestamp": "2026-07-31T08:35:24.648818",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 595,
+    "response_tokens": 14,
+    "total_tokens": 609
+  },
+  {
+    "timestamp": "2026-07-31T08:35:26.112872",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 922,
+    "response_tokens": 16,
+    "total_tokens": 938
+  },
+  {
+    "timestamp": "2026-07-31T08:35:40.299227",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3323,
+    "response_tokens": 212,
+    "total_tokens": 3535
+  },
+  {
+    "timestamp": "2026-07-31T08:38:48.470771",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 599,
+    "response_tokens": 19,
+    "total_tokens": 618
+  },
+  {
+    "timestamp": "2026-07-31T08:38:50.189438",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 1007,
+    "response_tokens": 30,
+    "total_tokens": 1037
+  },
+  {
+    "timestamp": "2026-07-31T08:39:03.489809",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3555,
+    "response_tokens": 250,
+    "total_tokens": 3805
+  },
+  {
+    "timestamp": "2026-07-31T08:40:23.220846",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 595,
+    "response_tokens": 14,
+    "total_tokens": 609
+  },
+  {
+    "timestamp": "2026-07-31T08:40:24.622779",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 1007,
+    "response_tokens": 20,
+    "total_tokens": 1027
+  },
+  {
+    "timestamp": "2026-07-31T08:40:37.657249",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3554,
+    "response_tokens": 250,
+    "total_tokens": 3804
+  },
+  {
+    "timestamp": "2026-07-31T08:43:40.794367",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 609,
+    "response_tokens": 16,
+    "total_tokens": 625
+  },
+  {
+    "timestamp": "2026-07-31T08:43:42.343120",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 1059,
+    "response_tokens": 22,
+    "total_tokens": 1081
+  },
+  {
+    "timestamp": "2026-07-31T08:43:56.329290",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3827,
+    "response_tokens": 250,
+    "total_tokens": 4077
+  },
+  {
+    "timestamp": "2026-07-31T08:48:00.527031",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 600,
+    "response_tokens": 16,
+    "total_tokens": 616
+  },
+  {
+    "timestamp": "2026-07-31T08:48:01.839781",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 1037,
+    "response_tokens": 19,
+    "total_tokens": 1056
+  },
+  {
+    "timestamp": "2026-07-31T08:48:15.647561",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 4076,
+    "response_tokens": 247,
+    "total_tokens": 4323
+  },
+  {
+    "timestamp": "2026-07-31T09:16:55.949839",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 594,
+    "response_tokens": 15,
+    "total_tokens": 609
+  },
+  {
+    "timestamp": "2026-07-31T09:16:58.123614",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 987,
+    "response_tokens": 32,
+    "total_tokens": 1019
+  },
+  {
+    "timestamp": "2026-07-31T09:17:08.372205",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3906,
+    "response_tokens": 110,
+    "total_tokens": 4016
+  },
+  {
+    "timestamp": "2026-07-31T09:17:29.749940",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 594,
+    "response_tokens": 15,
+    "total_tokens": 609
+  },
+  {
+    "timestamp": "2026-07-31T09:17:31.719379",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 1010,
+    "response_tokens": 36,
+    "total_tokens": 1046
+  },
+  {
+    "timestamp": "2026-07-31T09:17:41.101621",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 4089,
+    "response_tokens": 143,
+    "total_tokens": 4232
+  },
+  {
+    "timestamp": "2026-07-31T09:18:48.382900",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 609,
+    "response_tokens": 17,
+    "total_tokens": 626
+  },
+  {
+    "timestamp": "2026-07-31T09:18:50.227177",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 883,
+    "response_tokens": 31,
+    "total_tokens": 914
+  },
+  {
+    "timestamp": "2026-07-31T09:19:02.082894",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 4046,
+    "response_tokens": 162,
+    "total_tokens": 4208
+  },
+  {
+    "timestamp": "2026-07-31T09:20:53.564106",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 611,
+    "response_tokens": 17,
+    "total_tokens": 628
+  },
+  {
+    "timestamp": "2026-07-31T09:20:54.989204",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 937,
+    "response_tokens": 20,
+    "total_tokens": 957
+  },
+  {
+    "timestamp": "2026-07-31T09:21:07.502575",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 4027,
+    "response_tokens": 184,
+    "total_tokens": 4211
+  },
+  {
+    "timestamp": "2026-07-31T09:25:06.614508",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 595,
+    "response_tokens": 16,
+    "total_tokens": 611
+  },
+  {
+    "timestamp": "2026-07-31T09:25:07.961958",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 704,
+    "response_tokens": 21,
+    "total_tokens": 725
+  },
+  {
+    "timestamp": "2026-07-31T09:25:53.616541",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 598,
+    "response_tokens": 16,
+    "total_tokens": 614
+  },
+  {
+    "timestamp": "2026-07-31T09:25:55.102671",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 909,
+    "response_tokens": 22,
+    "total_tokens": 931
+  },
+  {
+    "timestamp": "2026-07-31T09:26:07.640237",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 4035,
+    "response_tokens": 167,
+    "total_tokens": 4202
+  },
+  {
+    "timestamp": "2026-07-31T09:42:55.793152",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 605,
+    "response_tokens": 16,
+    "total_tokens": 621
+  },
+  {
+    "timestamp": "2026-07-31T09:42:57.272313",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 714,
+    "response_tokens": 17,
+    "total_tokens": 731
+  },
+  {
+    "timestamp": "2026-07-31T09:43:06.664800",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3081,
+    "response_tokens": 109,
+    "total_tokens": 3190
+  },
+  {
+    "timestamp": "2026-07-31T09:45:12.331158",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 636,
+    "response_tokens": 15,
+    "total_tokens": 651
+  },
+  {
+    "timestamp": "2026-07-31T09:45:13.967298",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 876,
+    "response_tokens": 27,
+    "total_tokens": 903
+  },
+  {
+    "timestamp": "2026-07-31T09:45:24.706060",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3671,
+    "response_tokens": 192,
+    "total_tokens": 3863
+  },
+  {
+    "timestamp": "2026-07-31T09:46:17.043219",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 598,
+    "response_tokens": 14,
+    "total_tokens": 612
+  },
+  {
+    "timestamp": "2026-07-31T09:46:18.349377",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 971,
+    "response_tokens": 16,
+    "total_tokens": 987
+  },
+  {
+    "timestamp": "2026-07-31T09:46:27.016052",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3458,
+    "response_tokens": 137,
+    "total_tokens": 3595
+  },
+  {
+    "timestamp": "2026-07-31T09:48:58.828028",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 606,
+    "response_tokens": 20,
+    "total_tokens": 626
+  },
+  {
+    "timestamp": "2026-07-31T09:49:00.455685",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 936,
+    "response_tokens": 27,
+    "total_tokens": 963
+  },
+  {
+    "timestamp": "2026-07-31T09:49:09.641097",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3623,
+    "response_tokens": 158,
+    "total_tokens": 3781
+  },
+  {
+    "timestamp": "2026-07-31T10:15:13.770011",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 596,
+    "response_tokens": 18,
+    "total_tokens": 614
+  },
+  {
+    "timestamp": "2026-07-31T10:15:15.470462",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 930,
+    "response_tokens": 20,
+    "total_tokens": 950
+  },
+  {
+    "timestamp": "2026-07-31T10:15:31.594164",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3957,
+    "response_tokens": 250,
+    "total_tokens": 4207
+  },
+  {
+    "timestamp": "2026-07-31T10:15:32.997592",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 593,
+    "response_tokens": 20,
+    "total_tokens": 613
+  },
+  {
+    "timestamp": "2026-07-31T15:34:09.017861",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 595,
+    "response_tokens": 16,
+    "total_tokens": 611
+  },
+  {
+    "timestamp": "2026-07-31T15:34:18.828079",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 126,
+    "total_tokens": 1404
+  },
+  {
+    "timestamp": "2026-07-31T15:34:24.751509",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1300,
+    "response_tokens": 146,
+    "total_tokens": 1446
+  },
+  {
+    "timestamp": "2026-07-31T15:34:30.664799",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1333,
+    "response_tokens": 147,
+    "total_tokens": 1480
+  },
+  {
+    "timestamp": "2026-07-31T15:34:34.569610",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-07-31T15:35:20.021298",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 117,
+    "total_tokens": 1395
+  },
+  {
+    "timestamp": "2026-07-31T15:35:23.942970",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 976,
+    "response_tokens": 80,
+    "total_tokens": 1056
+  },
+  {
+    "timestamp": "2026-07-31T15:37:33.280928",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3087,
+    "response_tokens": 250,
+    "total_tokens": 3337
+  },
+  {
+    "timestamp": "2026-07-31T15:38:39.748348",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 597,
+    "response_tokens": 18,
+    "total_tokens": 615
+  },
+  {
+    "timestamp": "2026-07-31T15:38:45.624580",
+    "agent": "PlanningAgent",
+    "prompt_tokens": 700,
+    "response_tokens": 82,
+    "total_tokens": 782
+  },
+  {
+    "timestamp": "2026-07-31T15:42:56.509010",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 131,
+    "total_tokens": 1409
+  },
+  {
+    "timestamp": "2026-07-31T15:43:02.270092",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1300,
+    "response_tokens": 146,
+    "total_tokens": 1446
+  },
+  {
+    "timestamp": "2026-07-31T15:43:08.145196",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1333,
+    "response_tokens": 147,
+    "total_tokens": 1480
+  },
+  {
+    "timestamp": "2026-07-31T15:43:12.229410",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-07-31T15:43:41.651930",
+    "agent": "PlanningAgent",
+    "prompt_tokens": 700,
+    "response_tokens": 75,
+    "total_tokens": 775
+  },
+  {
+    "timestamp": "2026-07-31T15:48:03.612092",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 117,
+    "total_tokens": 1395
+  },
+  {
+    "timestamp": "2026-07-31T15:48:09.252984",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1300,
+    "response_tokens": 146,
+    "total_tokens": 1446
+  },
+  {
+    "timestamp": "2026-07-31T15:48:15.142326",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1333,
+    "response_tokens": 147,
+    "total_tokens": 1480
+  },
+  {
+    "timestamp": "2026-07-31T15:48:19.223149",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-07-31T15:49:34.205715",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3367,
+    "response_tokens": 213,
+    "total_tokens": 3580
+  },
+  {
+    "timestamp": "2026-07-31T15:50:57.296693",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 117,
+    "total_tokens": 1395
+  },
+  {
+    "timestamp": "2026-07-31T15:51:02.874897",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1300,
+    "response_tokens": 146,
+    "total_tokens": 1446
+  },
+  {
+    "timestamp": "2026-07-31T15:51:08.588454",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1333,
+    "response_tokens": 147,
+    "total_tokens": 1480
+  },
+  {
+    "timestamp": "2026-07-31T15:51:12.493656",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-07-31T16:04:00.048911",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 126,
+    "total_tokens": 1404
+  },
+  {
+    "timestamp": "2026-07-31T16:04:06.027165",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1300,
+    "response_tokens": 149,
+    "total_tokens": 1449
+  },
+  {
+    "timestamp": "2026-07-31T16:04:12.182824",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1333,
+    "response_tokens": 158,
+    "total_tokens": 1491
+  },
+  {
+    "timestamp": "2026-07-31T16:04:16.185511",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-07-31T16:05:29.348072",
+    "agent": "CommercialAgent",
+    "prompt_tokens": 3609,
+    "response_tokens": 212,
+    "total_tokens": 3821
+  },
+  {
+    "timestamp": "2026-07-31T16:06:16.588911",
+    "agent": "OrchestratorAgent",
+    "prompt_tokens": 611,
+    "response_tokens": 18,
+    "total_tokens": 629
+  },
+  {
+    "timestamp": "2026-07-31T16:06:23.611312",
+    "agent": "EmailAgent",
+    "prompt_tokens": 1278,
+    "response_tokens": 126,
+    "total_tokens": 1404
+  },
+  {
+    "timestamp": "2026-07-31T16:06:28.264549",
+    "agent": "ReplyAgent",
+    "prompt_tokens": 980,
+    "response_tokens": 107,
+    "total_tokens": 1087
   }
 ]

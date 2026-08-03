@@ -1,19 +1,74 @@
 const API_BASE = "http://localhost:8000";
+const ACCESS_TOKEN_KEY = "orbit_access_token";
+const REFRESH_TOKEN_KEY = "orbit_refresh_token";
+let onTokenRefreshed = null;
+let onAuthExpired = null;
 
+export function setAuthCallbacks({ onRefreshed, onExpired } = {}) {
+  onTokenRefreshed = onRefreshed || null;
+  onAuthExpired = onExpired || null;
+}
+export function getStoredAccessToken() {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setStoredTokens(accessToken, refreshToken) {
+  if (accessToken) localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+}
+
+export function clearStoredTokens() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
 // ---------------------------------------------------------------------
 // Low-level helper: attaches the Authorization header automatically
 // when a token is provided. All protected routes (admin/*, chat when
 // logged in, oauth/*) go through this instead of raw fetch().
 // ---------------------------------------------------------------------
-async function authFetch(path, { method = "GET", token = null, body = null } = {}) {
+async function rawFetch(path, { method, token, body }) {
   const headers = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  return fetch(`${API_BASE}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+}
+
+async function tryRefreshAccessToken() {
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (!refreshToken) return null;
+
+  try {
+    const res = await rawFetch("/api/auth/refresh", {
+      method: "POST",
+      token: null,
+      body: { refresh_token: refreshToken },
+    });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+    onTokenRefreshed?.(data.access_token);
+    return data.access_token;
+  } catch {
+    return null;
+  }
+}
+async function authFetch(path, { method = "GET", token = null, body = null } = {}) {
+  let res = await rawFetch(path, { method, token, body });
+
+  if (res.status === 401 && token) {
+    const newToken = await tryRefreshAccessToken();
+
+    if (newToken) {
+      res = await rawFetch(path, { method, token: newToken, body });
+    } else {
+      onAuthExpired?.();
+    }
+  }
 
   if (!res.ok) {
     let detail = `Erreur API: ${res.status}`;
@@ -28,7 +83,6 @@ async function authFetch(path, { method = "GET", token = null, body = null } = {
 
   return res.json();
 }
-
 // ---------------------------------------------------------------------
 // AUTH
 // ---------------------------------------------------------------------
@@ -38,7 +92,9 @@ export async function signup(email, password, plan = "standard") {
 }
 
 export async function login(email, password) {
-  return authFetch("/api/auth/login", { method: "POST", body: { email, password } });
+  const data = await authFetch("/api/auth/login", { method: "POST", body: { email, password } });
+  setStoredTokens(data.access_token, data.refresh_token);
+  return data;
 }
 
 export async function verifyEmail(token) {
@@ -69,6 +125,25 @@ export async function sendChatMessage(sessionId, message, token = null) {
     method: "POST",
     token,
     body: { session_id: sessionId, message },
+  });
+}
+export async function resetConversation(sessionId, token) {
+  return authFetch("/api/chat/reset", {
+    method: "POST",
+    token,
+    body: { session_id: sessionId },
+  });
+}
+
+export async function getMemoryStatus(token) {
+  return authFetch("/api/chat/memory", { token });
+}
+
+export async function setMemoryEnabled(enabled, token) {
+  return authFetch("/api/chat/memory", {
+    method: "POST",
+    token,
+    body: { enabled },
   });
 }
 

@@ -1,9 +1,3 @@
-"""
-Remplace le lancement manuel individuel de chaque agent
-(python -m agents.email_agent, python -m agents.planning_agent, ...).
-
-"""
-
 from agents.orchestrator_agent import OrchestratorAgent
 
 

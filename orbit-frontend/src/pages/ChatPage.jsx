@@ -1,22 +1,35 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { sendChatMessage } from "../api";
+import {
+  sendChatMessage,
+  getMemoryStatus,
+  setMemoryEnabled as apiSetMemoryEnabled,
+} from "../api";
 import { useAuth } from "../context/AuthContext";
-
+const CHAT_SESSION_KEY = "orbit_chat_session_id";
 export default function ChatPage() {
   const { user, accessToken, isAuthenticated } = useAuth();
-
-  const [sessionId, setSessionId] = useState(null);
+  
+  const [sessionId, setSessionId] = useState(() => localStorage.getItem(CHAT_SESSION_KEY));
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [quota, setQuota] = useState(null);
+  const [memoryEnabled, setMemoryEnabledState] = useState(true);
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    getMemoryStatus(accessToken)
+      .then((data) => { if (!cancelled) setMemoryEnabledState(data.memory_enabled); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isAuthenticated, accessToken]);
   async function handleSend() {
     const text = input.trim();
     if (!text || loading) return;
@@ -32,6 +45,7 @@ export default function ChatPage() {
     try {
       const data = await sendChatMessage(sessionId, text, isAuthenticated ? accessToken : null);
       setSessionId(data.session_id);
+      localStorage.setItem(CHAT_SESSION_KEY, data.session_id);
       if (data.quota) setQuota(data.quota);
       setMessages((prev) => [
         ...prev,
@@ -55,15 +69,59 @@ export default function ChatPage() {
     }
   }
 
-  const guestQuotaExhausted = quota && quota.plan === "guest" && !quota.allowed;
+  function handleNewConversation() {
+    // Toujours : on vide l'écran visuellement.
+    setMessages([]);
 
+    if (memoryEnabled) {
+      
+      return;
+    }
+    setSessionId(null);
+    localStorage.removeItem(CHAT_SESSION_KEY);
+    setQuota(null);
+  }
+
+  async function handleMemoryToggle(e) {
+    const enabled = e.target.checked;
+    setMemoryEnabledState(enabled);
+    if (isAuthenticated) {
+      try {
+        await apiSetMemoryEnabled(enabled, accessToken);
+      } catch (err) {
+        console.error("Memory toggle error:", err);
+      }
+    }
+  }
+
+  const guestQuotaExhausted = quota && quota.plan === "guest" && !quota.allowed;
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        Orbit AI Assistant
-        {isAuthenticated && (
-          <span style={styles.headerSubtitle}> Signed in as  {user?.email}</span>
-        )}
+        <div style={styles.headerTopRow}>
+          <div style={styles.headerTitleBlock}>
+            <span style={styles.headerTitle}>Orbit AI Assistant</span>
+            {isAuthenticated && (
+              <span style={styles.headerSubtitle}>Signed in as {user?.email}</span>
+            )}
+          </div>
+          {isAuthenticated && (
+            <div style={styles.headerControls}>
+              <label style={styles.memoryLabel}>
+                <input
+                  type="checkbox"
+                  checked={memoryEnabled}
+                  onChange={handleMemoryToggle}
+                  style={styles.memoryCheckbox}
+                />
+                Remember conversation
+              </label>
+              <button style={styles.newConvoButton} onClick={handleNewConversation}>
+                + New conversation
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {!isAuthenticated && !guestQuotaExhausted && (
@@ -153,16 +211,65 @@ const styles = {
     margin: "0 auto",
     fontFamily: "system-ui, sans-serif",
   },
-  header: {
-    padding: "16px 20px",
-    fontWeight: 600,
-    fontSize: 18,
+header: {
+    padding: "14px 24px",
     borderBottom: "1px solid #e2e8f0",
-    display: "flex",
-    flexDirection: "column",
-    gap: 2,
+    background: "#fff",
   },
-  headerSubtitle: { fontSize: 12, fontWeight: 400, color: "#64748b" },
+  headerTopRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+    flexWrap: "wrap",
+  },
+  headerTitleBlock: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  headerTitle: {
+    fontWeight: 600,
+    fontSize: 17,
+    color: "#0f172a",
+  },
+  headerControls: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+  },
+  memoryLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    color: "#475569",
+    fontSize: 13,
+    cursor: "pointer",
+    userSelect: "none",
+  },
+  memoryCheckbox: {
+    width: 15,
+    height: 15,
+    accentColor: "#2563eb",
+    cursor: "pointer",
+  },
+  newConvoButton: {
+    padding: "6px 14px",
+    borderRadius: 8,
+    border: "1px solid #cbd5e1",
+    background: "#f8fafc",
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "background 0.15s ease, border-color 0.15s ease",
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: 400,
+    color: "#94a3b8",
+  },
   guestBanner: {
     padding: "8px 20px",
     background: "#eff6ff",
