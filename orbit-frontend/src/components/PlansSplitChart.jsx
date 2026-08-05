@@ -1,0 +1,49 @@
+import { useMemo } from "react";
+
+export default function PlansSplitChart({ clients }) {
+  const { standard, premium, total } = useMemo(() => {
+    let standardCount = 0;
+    let premiumCount = 0;
+    Object.values(clients || {}).forEach((c) => {
+      if (c.plan === "premium") premiumCount += 1;
+      else standardCount += 1;
+    });
+    return { standard: standardCount, premium: premiumCount, total: standardCount + premiumCount };
+  }, [clients]);
+
+  const premiumPct = total ? Math.round((premium / total) * 100) : 0;
+  const standardPct = total ? 100 - premiumPct : 0;
+
+  return (
+    <div style={styles.card}>
+      <h3 style={styles.cardTitle}>Plans</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <div style={styles.rowLabel}>
+            <span>Premium</span>
+            <span>{premium} ({premiumPct}%)</span>
+          </div>
+          <div style={styles.barTrack}>
+            <div style={{ width: `${premiumPct}%`, height: "100%", background: "#2563eb", borderRadius: 4 }} />
+          </div>
+        </div>
+        <div>
+          <div style={styles.rowLabel}>
+            <span>Standard</span>
+            <span>{standard} ({standardPct}%)</span>
+          </div>
+          <div style={styles.barTrack}>
+            <div style={{ width: `${standardPct}%`, height: "100%", background: "#94a3b8", borderRadius: 4 }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  card: { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
+  cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#0f172a" },
+  rowLabel: { display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748b", marginBottom: 4 },
+  barTrack: { height: 8, background: "#eff6ff", borderRadius: 4, overflow: "hidden" },
+};

@@ -189,6 +189,7 @@ class ReplyAgent(BaseAgent):
     def get_raw_email_list(self, max_results=5, user_id: int = None, force_login: bool = False) -> list:
 
         email_agent = EmailAgent()
+        email_agent.current_user_id = user_id
         if user_id is not None:
             service = email_agent.get_gmail_service_for_user(user_id)
         else:
@@ -197,14 +198,15 @@ class ReplyAgent(BaseAgent):
 
     def search_raw_email_list(self, query: str, max_results=5, user_id: int = None, force_login: bool = False) -> list:
         email_agent = EmailAgent()
+        email_agent.current_user_id = user_id
         if user_id is not None:
             service = email_agent.get_gmail_service_for_user(user_id)
         else:
             service = email_agent.get_gmail_service(force_login=force_login)
         return email_agent.search_emails(service, query, max_results)
-
     def analyze_and_draft(self, email: dict) -> dict:
         email_agent = EmailAgent()
+        email_agent.current_user_id = getattr(self, "current_user_id", None)
         analysis = email_agent.analyze_email(email)
         draft = self.draft_reply(email, analysis)
 

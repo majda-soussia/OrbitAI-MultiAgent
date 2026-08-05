@@ -6,3 +6,4 @@ pip install argon2-cffi python-jose[cryptography] psycopg2-binary python-dotenv 
 pip install python-multipart --break-system-packages
 pip install cryptography --break-system-packages
 pip install google-auth-oauthlib google-auth-httplib2 --break-system-packages
+ollama pull bge-m3

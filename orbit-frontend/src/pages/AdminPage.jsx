@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { getTokenSummary, getSessions, getDebugStatus, setDebugStatus, getClients, setClientPlan } from "../api";
+import { getTokenSummary, getSessions, getDebugStatus, setDebugStatus, getClients, getUsageByClient } from "../api";
 import { useAuth } from "../context/AuthContext";
+import ClientsTable from "../components/ClientsTable";
+import ClientDrawer from "../components/ClientDrawer";
+import IndustryChart from "../components/IndustryChart";
+import MachineDistributionChart from "../components/MachineDistributionChart";
+import PlansSplitChart from "../components/PlansSplitChart";
 
 export default function AdminPage() {
   const { accessToken } = useAuth();
@@ -8,18 +13,20 @@ export default function AdminPage() {
   const [sessions, setSessions] = useState(null);
   const [debug, setDebug] = useState(false);
   const [clients, setClients] = useState(null);
+  const [usageByClient, setUsageByClient] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [selectedEmail, setSelectedEmail] = useState(null);
   async function refresh() {
     setLoading(true);
     try {
-      const [tokenData, sessionData, debugData, clientData] = await Promise.all([
-        getTokenSummary(accessToken), getSessions(accessToken), getDebugStatus(accessToken), getClients(accessToken),
+      const [tokenData, sessionData, debugData, clientData, usageData] = await Promise.all([
+        getTokenSummary(accessToken), getSessions(accessToken), getDebugStatus(accessToken), getClients(accessToken), getUsageByClient(accessToken),
       ]);
       setTokens(tokenData);
       setSessions(sessionData);
       setDebug(debugData.debug);
       setClients(clientData);
+      setUsageByClient(usageData);
     } catch (err) {
       console.error("Erreur chargement admin:", err);
     } finally {
@@ -38,15 +45,6 @@ export default function AdminPage() {
     setDebug(result.debug);
   }
 
-  async function handleUpgrade(email) {
-    await setClientPlan(email, "premium", accessToken);
-    await refresh();
-  }
-
-  async function handleDowngrade(email) {
-    await setClientPlan(email, "standard", accessToken);
-    await refresh();
-  }
   if (loading) return <div style={styles.container}>Loading...</div>;
 
   const maxTokens = tokens
@@ -57,10 +55,6 @@ export default function AdminPage() {
   const totalBudget = clients
     ? Object.values(clients).reduce((sum, c) => sum + (c.token_limit ?? 5000), 0)
     : 0;
-  const totalUsed = clients
-    ? Object.values(clients).reduce((sum, c) => sum + (c.tokens_used ?? 0), 0)
-    : 0;
-
   return (
     <div style={styles.container}>
       <div style={styles.headerRow}>
@@ -114,26 +108,19 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+      <ClientsTable clients={clients} onSelectClient={setSelectedEmail} />
+      <ClientDrawer
+        email={selectedEmail}
+        onClose={() => setSelectedEmail(null)}
+        onPlanChange={refresh}
+      />
 
-      {/* Budget tokens clients */}
-      {clients && Object.keys(clients).length > 0 && (
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Client Token Budget</h3>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748b", marginBottom: 6 }}>
-            <span>{totalUsed.toLocaleString()} tokens used</span>
-            <span>{totalBudget.toLocaleString()} total budget</span>
-          </div>
-          <div style={styles.barTrackLarge}>
-            <div style={{
-              width: `${Math.min(100, (totalUsed / totalBudget) * 100)}%`,
-              height: "100%",
-              background: totalUsed / totalBudget > 0.9 ? "#ef4444" : "#2563eb",
-              borderRadius: 6,
-              transition: "width 0.3s ease",
-            }} />
-          </div>
-        </div>
-      )}
+      {/* Business Intelligence */}
+      <div style={styles.biGrid}>
+        <IndustryChart clients={clients} />
+        <MachineDistributionChart clients={clients} />
+        <PlansSplitChart clients={clients} />
+      </div>
 
       {/* Tokens par agent */}
       <div style={styles.card}>
@@ -181,49 +168,6 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
-
-      {/* Clients connus */}
-      {clients && Object.keys(clients).length > 0 && (
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Clients</h3>
-          {Object.entries(clients).map(([email, profile]) => (
-            <div key={email} style={styles.clientRow}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 500 }}>{email}</span>
-                  <span style={profile.plan === "Upgrade" ? styles.badgePremium : styles.badgeStandard}>
-                    {profile.plan}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ ...styles.barTrack, flex: 1 }}>
-                    <div style={{
-                      width: `${Math.min(100, ((profile.tokens_used ?? 0) / (profile.token_limit ?? 5000)) * 100)}%`,
-                      height: "100%",
-                      background: (profile.remaining ?? 1) === 0 ? "#ef4444" : "#2563eb",
-                      borderRadius: 4,
-                    }} />
-                  </div>
-                  <span style={{ fontSize: 12, color: "#64748b", whiteSpace: "nowrap" }}>
-                    {(profile.tokens_used ?? 0).toLocaleString()} / {(profile.token_limit ?? 5000).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 6, marginLeft: 12 }}>
-                {profile.plan === "standard" ? (
-                  <button style={styles.upgradeBtn} onClick={() => handleUpgrade(email)}>
-                    → Premium
-                  </button>
-                ) : (
-                  <button style={styles.downgradeBtn} onClick={() => handleDowngrade(email)}>
-                    Downgrade
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -246,9 +190,5 @@ const styles = {
   barTrack: { flex: 1, height: 8, background: "#eff6ff", borderRadius: 4, overflow: "hidden" },
   barValue: { fontSize: 13, width: 70, textAlign: "right", color: "#0f172a" },
   sessionRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #f1f5f9" },
-  clientRow: { display: "flex", alignItems: "center", padding: "12px 0", borderBottom: "1px solid #f1f5f9" },
-  badgePremium: { background: "#eff6ff", color: "#2563eb", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6 },
-  badgeStandard: { background: "#f1f5f9", color: "#64748b", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6 },
-  upgradeBtn: { fontSize: 12, padding: "4px 10px", borderRadius: 6, border: "1px solid #2563eb", background: "#eff6ff", color: "#2563eb", cursor: "pointer", fontWeight: 500 },
-  downgradeBtn: { fontSize: 12, padding: "4px 10px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#f8fafc", color: "#64748b", cursor: "pointer" },
+  biGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 },
 };

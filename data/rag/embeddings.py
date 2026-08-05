@@ -5,7 +5,7 @@ import numpy as np
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 # Get the embedding model name from the environment.
 # Default to "nomic-embed-text".
-EMBED_MODEL = os.environ.get("EMBED_MODEL", "nomic-embed-text")
+EMBED_MODEL = os.environ.get("EMBED_MODEL", "bge-m3")
 # Create a reusable Ollama client.
 _embed_client = ollama.Client(host=OLLAMA_HOST)
 

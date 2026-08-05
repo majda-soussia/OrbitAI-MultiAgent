@@ -187,6 +187,29 @@ export async function getClients(token) {
   return authFetch("/api/admin/clients", { token });
 }
 
+export async function getUsageByClient(token) {
+  return authFetch("/api/admin/usage_by_client", { token });
+}
+
+export async function getClientDetail(email, token) {
+  return authFetch(`/api/admin/clients/${encodeURIComponent(email)}/detail`, { token });
+}
+
+export async function resetClientHistory(email, token) {
+  return authFetch(`/api/admin/clients/${encodeURIComponent(email)}/reset_history`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function toggleClientMemory(email, enabled, token) {
+  return authFetch(`/api/admin/clients/${encodeURIComponent(email)}/toggle_memory`, {
+    method: "POST",
+    token,
+    body: { enabled },
+  });
+}
+
 export async function setClientPlan(clientEmail, plan, token) {
   return authFetch("/api/admin/set_plan", {
     method: "POST",

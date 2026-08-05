@@ -1,6 +1,7 @@
 # Directory containing all RAG source files
 
 # Load a JSON file and return its content as a Python object.
+from fileinput import filename
 import json
 import os
 
@@ -49,6 +50,14 @@ def chunk_products(filename="orbit_products.json"):
                         "metadata": {"source": filename, "type": "key_stats"}})
 
     # --- Modules (1 chunk par module) ---
+    # --- Modules (1 chunk par module) ---
+    modules = data.get("modules", [])
+    if modules:
+        text = ("Orbit offers the following modules: "
+                + ", ".join(m.get("name", "") for m in modules) + ". "
+                "These are all the Orbit product modules available.")
+        chunks.append({"id": "modules_overview_0", "text": text,
+                "metadata": {"source": filename, "type": "modules_overview"}})
     for i, m in enumerate(data.get("modules", [])):
         text = (
             f"Orbit module: {m.get('name')} ({m.get('id')}). Category: {m.get('category')}. "

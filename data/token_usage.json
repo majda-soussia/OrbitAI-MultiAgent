@@ -2336,5 +2336,461 @@
     "prompt_tokens": 980,
     "response_tokens": 107,
     "total_tokens": 1087
+  },
+  {
+    "timestamp": "2026-08-03T09:20:39.641015",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 3839,
+    "response_tokens": 212,
+    "total_tokens": 4051
+  },
+  {
+    "timestamp": "2026-08-03T09:21:37.972231",
+    "agent": "OrchestratorAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 594,
+    "response_tokens": 15,
+    "total_tokens": 609
+  },
+  {
+    "timestamp": "2026-08-03T09:21:39.747163",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 992,
+    "response_tokens": 18,
+    "total_tokens": 1010
+  },
+  {
+    "timestamp": "2026-08-03T09:21:51.114660",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 4061,
+    "response_tokens": 186,
+    "total_tokens": 4247
+  },
+  {
+    "timestamp": "2026-08-03T09:29:31.319161",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 3979,
+    "response_tokens": 212,
+    "total_tokens": 4191
+  },
+  {
+    "timestamp": "2026-08-03T09:33:21.919524",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 3921,
+    "response_tokens": 186,
+    "total_tokens": 4107
+  },
+  {
+    "timestamp": "2026-08-03T09:39:16.808632",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 3925,
+    "response_tokens": 153,
+    "total_tokens": 4078
+  },
+  {
+    "timestamp": "2026-08-03T10:21:03.477782",
+    "agent": "OrchestratorAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 601,
+    "response_tokens": 17,
+    "total_tokens": 618
+  },
+  {
+    "timestamp": "2026-08-03T10:21:05.377633",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 900,
+    "response_tokens": 18,
+    "total_tokens": 918
+  },
+  {
+    "timestamp": "2026-08-03T10:21:16.831245",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 4095,
+    "response_tokens": 94,
+    "total_tokens": 4189
+  },
+  {
+    "timestamp": "2026-08-03T10:21:17.854216",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 111,
+    "response_tokens": 13,
+    "total_tokens": 124
+  },
+  {
+    "timestamp": "2026-08-03T10:22:43.143178",
+    "agent": "EmailAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 1278,
+    "response_tokens": 136,
+    "total_tokens": 1414
+  },
+  {
+    "timestamp": "2026-08-03T10:22:48.796326",
+    "agent": "EmailAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 1300,
+    "response_tokens": 146,
+    "total_tokens": 1446
+  },
+  {
+    "timestamp": "2026-08-03T10:22:54.622830",
+    "agent": "EmailAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 1333,
+    "response_tokens": 146,
+    "total_tokens": 1479
+  },
+  {
+    "timestamp": "2026-08-03T10:22:58.439508",
+    "agent": "EmailAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-08-03T10:23:19.676195",
+    "agent": "PlanningAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 277,
+    "response_tokens": 25,
+    "total_tokens": 302
+  },
+  {
+    "timestamp": "2026-08-03T10:23:37.778639",
+    "agent": "EmailAgent",
+    "client_email": null,
+    "prompt_tokens": 1278,
+    "response_tokens": 117,
+    "total_tokens": 1395
+  },
+  {
+    "timestamp": "2026-08-03T10:23:41.220608",
+    "agent": "ReplyAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 976,
+    "response_tokens": 65,
+    "total_tokens": 1041
+  },
+  {
+    "timestamp": "2026-08-03T11:35:14.252639",
+    "agent": "OrchestratorAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 597,
+    "response_tokens": 17,
+    "total_tokens": 614
+  },
+  {
+    "timestamp": "2026-08-03T11:35:16.009242",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 849,
+    "response_tokens": 22,
+    "total_tokens": 871
+  },
+  {
+    "timestamp": "2026-08-03T11:35:28.311070",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 3971,
+    "response_tokens": 146,
+    "total_tokens": 4117
+  },
+  {
+    "timestamp": "2026-08-03T11:35:29.889267",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 107,
+    "response_tokens": 16,
+    "total_tokens": 123
+  },
+  {
+    "timestamp": "2026-08-03T11:39:33.416688",
+    "agent": "EmailAgent",
+    "client_email": null,
+    "prompt_tokens": 1502,
+    "response_tokens": 105,
+    "total_tokens": 1607
+  },
+  {
+    "timestamp": "2026-08-03T11:39:34.512131",
+    "agent": "PlanningAgent",
+    "client_email": null,
+    "prompt_tokens": 277,
+    "response_tokens": 25,
+    "total_tokens": 302
+  },
+  {
+    "timestamp": "2026-08-03T11:39:38.666282",
+    "agent": "EmailAgent",
+    "client_email": null,
+    "prompt_tokens": 1553,
+    "response_tokens": 108,
+    "total_tokens": 1661
+  },
+  {
+    "timestamp": "2026-08-03T11:39:42.674090",
+    "agent": "EmailAgent",
+    "client_email": null,
+    "prompt_tokens": 1271,
+    "response_tokens": 99,
+    "total_tokens": 1370
+  },
+  {
+    "timestamp": "2026-08-03T11:39:46.463784",
+    "agent": "EmailAgent",
+    "client_email": null,
+    "prompt_tokens": 1472,
+    "response_tokens": 87,
+    "total_tokens": 1559
+  },
+  {
+    "timestamp": "2026-08-03T11:39:50.464727",
+    "agent": "EmailAgent",
+    "client_email": null,
+    "prompt_tokens": 1264,
+    "response_tokens": 95,
+    "total_tokens": 1359
+  },
+  {
+    "timestamp": "2026-08-03T11:51:05.005551",
+    "agent": "OrchestratorAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 590,
+    "response_tokens": 17,
+    "total_tokens": 607
+  },
+  {
+    "timestamp": "2026-08-03T11:51:06.448865",
+    "agent": "CommercialAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 699,
+    "response_tokens": 16,
+    "total_tokens": 715
+  },
+  {
+    "timestamp": "2026-08-03T11:51:07.524571",
+    "agent": "CommercialAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 100,
+    "response_tokens": 13,
+    "total_tokens": 113
+  },
+  {
+    "timestamp": "2026-08-03T11:51:23.087860",
+    "agent": "OrchestratorAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 599,
+    "response_tokens": 15,
+    "total_tokens": 614
+  },
+  {
+    "timestamp": "2026-08-03T11:51:24.120020",
+    "agent": "CommercialAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 109,
+    "response_tokens": 13,
+    "total_tokens": 122
+  },
+  {
+    "timestamp": "2026-08-03T11:52:46.854054",
+    "agent": "OrchestratorAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 594,
+    "response_tokens": 15,
+    "total_tokens": 609
+  },
+  {
+    "timestamp": "2026-08-03T11:52:47.934304",
+    "agent": "CommercialAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 703,
+    "response_tokens": 15,
+    "total_tokens": 718
+  },
+  {
+    "timestamp": "2026-08-03T11:52:55.897317",
+    "agent": "CommercialAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 3496,
+    "response_tokens": 61,
+    "total_tokens": 3557
+  },
+  {
+    "timestamp": "2026-08-03T11:52:56.992045",
+    "agent": "CommercialAgent",
+    "client_email": "majdasoussia@gmail.com",
+    "prompt_tokens": 104,
+    "response_tokens": 13,
+    "total_tokens": 117
+  },
+  {
+    "timestamp": "2026-08-05T09:12:12.180472",
+    "agent": "OrchestratorAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 608,
+    "response_tokens": 16,
+    "total_tokens": 624
+  },
+  {
+    "timestamp": "2026-08-05T09:12:14.315296",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 910,
+    "response_tokens": 37,
+    "total_tokens": 947
+  },
+  {
+    "timestamp": "2026-08-05T09:12:42.438955",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 3982,
+    "response_tokens": 155,
+    "total_tokens": 4137
+  },
+  {
+    "timestamp": "2026-08-05T09:12:43.883556",
+    "agent": "CommercialAgent",
+    "client_email": "orbit.test.client@gmail.com",
+    "prompt_tokens": 118,
+    "response_tokens": 16,
+    "total_tokens": 134
+  },
+  {
+    "timestamp": "2026-08-05T09:15:17.390183",
+    "agent": "OrchestratorAgent",
+    "client_email": "majda.soussia@ensi-uma.tn",
+    "prompt_tokens": 608,
+    "response_tokens": 16,
+    "total_tokens": 624
+  },
+  {
+    "timestamp": "2026-08-05T09:15:19.074943",
+    "agent": "CommercialAgent",
+    "client_email": "majda.soussia@ensi-uma.tn",
+    "prompt_tokens": 841,
+    "response_tokens": 22,
+    "total_tokens": 863
+  },
+  {
+    "timestamp": "2026-08-05T09:15:47.737237",
+    "agent": "CommercialAgent",
+    "client_email": "majda.soussia@ensi-uma.tn",
+    "prompt_tokens": 3918,
+    "response_tokens": 174,
+    "total_tokens": 4092
+  },
+  {
+    "timestamp": "2026-08-05T09:15:49.078187",
+    "agent": "CommercialAgent",
+    "client_email": "majda.soussia@ensi-uma.tn",
+    "prompt_tokens": 118,
+    "response_tokens": 16,
+    "total_tokens": 134
+  },
+  {
+    "timestamp": "2026-08-05T09:19:34.518999",
+    "agent": "OrchestratorAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 612,
+    "response_tokens": 17,
+    "total_tokens": 629
+  },
+  {
+    "timestamp": "2026-08-05T09:19:36.230431",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 1011,
+    "response_tokens": 21,
+    "total_tokens": 1032
+  },
+  {
+    "timestamp": "2026-08-05T09:20:07.005256",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 4085,
+    "response_tokens": 250,
+    "total_tokens": 4335
+  },
+  {
+    "timestamp": "2026-08-05T09:20:08.328256",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 122,
+    "response_tokens": 13,
+    "total_tokens": 135
+  },
+  {
+    "timestamp": "2026-08-05T09:21:18.232085",
+    "agent": "OrchestratorAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 603,
+    "response_tokens": 16,
+    "total_tokens": 619
+  },
+  {
+    "timestamp": "2026-08-05T09:21:20.084372",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 1013,
+    "response_tokens": 23,
+    "total_tokens": 1036
+  },
+  {
+    "timestamp": "2026-08-05T09:21:50.330369",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 3875,
+    "response_tokens": 226,
+    "total_tokens": 4101
+  },
+  {
+    "timestamp": "2026-08-05T09:21:51.500827",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 113,
+    "response_tokens": 13,
+    "total_tokens": 126
+  },
+  {
+    "timestamp": "2026-08-05T09:23:53.331257",
+    "agent": "OrchestratorAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 623,
+    "response_tokens": 19,
+    "total_tokens": 642
+  },
+  {
+    "timestamp": "2026-08-05T09:23:55.259210",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 1017,
+    "response_tokens": 23,
+    "total_tokens": 1040
+  },
+  {
+    "timestamp": "2026-08-05T09:24:25.121007",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 4092,
+    "response_tokens": 250,
+    "total_tokens": 4342
+  },
+  {
+    "timestamp": "2026-08-05T09:24:26.488951",
+    "agent": "CommercialAgent",
+    "client_email": "soussiamajda@gmail.com",
+    "prompt_tokens": 133,
+    "response_tokens": 16,
+    "total_tokens": 149
   }
 ]

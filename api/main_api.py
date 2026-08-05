@@ -6,13 +6,15 @@ from pydantic import BaseModel
 from fastapi.responses import RedirectResponse
 import os
 from agents.orchestrator_agent import OrchestratorAgent
-from utils.token_tracker import get_summary, get_last_call_tokens
+from utils.token_tracker import get_summary, get_last_call_tokens, get_usage_by_client
 from utils.settings import is_debug_enabled, set_debug
 from utils.client_memory import (
     get_client_memory, save_client_turn, check_quota,
     add_client_tokens, set_client_plan, get_all_clients,
     clear_client_history, get_memory_enabled, set_memory_enabled,
+    upsert_client_profile, get_client_detail, get_all_client_profiles,
 )
+from utils.client_memory import get_usage_by_user_agent
 from utils.session_store import get_or_create_db_session
 from utils.client_memory import _load_plans
 from utils import auth as auth_module
@@ -78,6 +80,11 @@ def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
     if not current_user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required.")
     return current_user
+
+
+def get_current_admin_user(current_user: dict = Depends(get_current_user)) -> dict:
+    """Backward-compatible alias for the admin-only dependency."""
+    return require_admin(current_user)
 
 
 class SignupRequest(BaseModel):
@@ -196,7 +203,9 @@ def google_oauth_callback(code: str, state: str):
 def google_oauth_status(current_user: dict = Depends(get_current_user)):
     return {"connected": google_oauth.is_google_connected(current_user["id"])}
 
-
+@app.get("/api/admin/usage_by_client")
+def usage_by_client(current_user: dict = Depends(get_current_admin_user)):
+    return get_usage_by_user_agent()
 @app.delete("/api/oauth/google/disconnect")
 def google_oauth_disconnect(current_user: dict = Depends(get_current_user)):
     google_oauth.disconnect_google(current_user["id"])
@@ -252,26 +261,60 @@ def admin_set_plan(payload: PlanUpdate, _admin: dict = Depends(require_admin)):
 
 @app.get("/api/admin/clients")
 def admin_clients(_admin: dict = Depends(require_admin)):
-    """Lists all clients with their plan and token consumption."""
+    """Lists all clients with plan, token consumption, and the industry/
+    machine_count profile auto-extracted by CommercialAgent."""
 
     clients = get_all_clients()
+    profiles = get_all_client_profiles()
     plans = _load_plans()
     result = {}
     for email, profile in clients.items():
         plan_name = profile.get("plan", "standard")
         token_limit = int(plans.get(plan_name, {}).get("token_limit", 5000))
         tokens_used = int(profile.get("tokens_used", 0) or 0)
+        client_profile = profiles.get(email, {})
         result[email] = {
             "plan": plan_name,
             "tokens_used": tokens_used,
             "token_limit": token_limit,
             "remaining": max(0, token_limit - tokens_used),
             "last_seen": profile.get("last_seen") or "—",
+            "industry_type": client_profile.get("industry_type"),
+            "machine_count": client_profile.get("machine_count"),
         }
     return result
-
-
 ALL_AGENTS = ["CommercialAgent", "EmailAgent", "PlanningAgent", "ReplyAgent", "OrchestratorAgent"]
+
+
+@app.get("/api/admin/clients/{email}/detail")
+def admin_client_detail(email: str, _admin: dict = Depends(require_admin)):
+    detail = get_client_detail(email)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Client not found.")
+
+    detail["google_connected"] = google_oauth.is_google_connected(detail["user_id"])
+    for agent in ALL_AGENTS:
+        detail["usage_by_agent"].setdefault(agent, {"calls": 0, "total_tokens": 0, "avg_tokens": 0})
+    return detail
+
+class MemoryToggleAdminRequest(BaseModel):
+    enabled: bool
+
+
+@app.post("/api/admin/clients/{email}/reset_history")
+def admin_reset_history(email: str, _admin: dict = Depends(require_admin)):
+    clear_client_history(email)
+    return {"email": email, "message": "Conversation history cleared."}
+
+
+@app.post("/api/admin/clients/{email}/toggle_memory")
+def admin_toggle_memory(
+    email: str,
+    payload: MemoryToggleAdminRequest,
+    _admin: dict = Depends(require_admin),
+):
+    set_memory_enabled(email, payload.enabled)
+    return {"email": email, "memory_enabled": payload.enabled}
 
 
 @app.get("/api/admin/tokens")
@@ -282,6 +325,19 @@ def admin_tokens(_admin: dict = Depends(require_admin)):
             summary["by_agent"][agent] = 0
     return summary
 
+
+@app.get("/api/admin/usage_by_client")
+def admin_usage_by_client(_admin: dict = Depends(require_admin)):
+    """
+    Breakdown of token consumption by customer and agent, sourced from
+    PostgreSQL token_usage (single source of truth, all agents included) :
+    { "client@example.com": {"Commercial": 1234, "Email": 567, ...}, ... }
+    """
+    usage = get_usage_by_user_agent()
+    for breakdown in usage.values():
+        for agent in ALL_AGENTS:
+            breakdown.setdefault(agent, 0)
+    return usage
 
 @app.get("/api/admin/debug")
 def admin_get_debug(_admin: dict = Depends(require_admin)):
@@ -302,7 +358,7 @@ def admin_set_debug(payload: DebugToggle, _admin: dict = Depends(require_admin))
 def admin_sessions(_admin: dict = Depends(require_admin)):
     return {
         sid: {
-            "messages": len(orch.commercial_history),
+            "messages": getattr(orch, "total_messages", 0),
             "email": getattr(orch, "client_email", None),
         }
         for sid, orch in sessions.items()
@@ -487,11 +543,18 @@ def chat(
 
     if result["agent"] == "commercial":
         save_client_turn(client_email, payload.message, response_text)
-        # Count tokens actually consumed by this exchange
-        tokens_this_call = get_last_call_tokens()
-        add_client_tokens(client_email, tokens_this_call)
-        quota_status = check_quota(client_email)
+        # add_client_tokens() retiré : log_usage() (base_agent.py) écrit
+        # désormais directement dans token_usage avec le vrai user_id,
+        # pour CET appel comme pour tous les autres agents. Le garder ici
+        # aurait compté ces tokens deux fois pour Commercial uniquement.
 
+        if current_user is not None:
+            profile_info = orchestrator.commercial_agent.extract_profile_info(payload.message)
+            upsert_client_profile(
+                current_user["id"],
+                industry_type=profile_info["industry_type"],
+                machine_count=profile_info["machine_count"],
+            )
     return ChatResponse(
         session_id=session_id,
         agent=result["agent"],

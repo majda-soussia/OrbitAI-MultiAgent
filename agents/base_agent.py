@@ -22,6 +22,7 @@ class BaseAgent:
     top_k: int = None
     repeat_penalty: float = None
     max_tokens: int = None
+    current_user_id: int = None
 
     # --- RAG (desactive par defaut, chaque agent l'active explicitement) ---
     use_rag: bool = False
@@ -32,6 +33,13 @@ class BaseAgent:
         with open(config_path, "r", encoding="utf-8") as f:
             self.config = yaml.safe_load(f)
 
+        # Email du client courant, utilisé pour attribuer chaque appel LLM
+        # à un utilisateur dans le token tracker. None par défaut (usage
+        # CLI/dev/invité) — l'orchestrateur le renseigne sur chaque agent
+        # enfant avant de déléguer, une fois qu'un utilisateur authentifié
+        # est connu.
+        self.client_email = None
+        
         # If the subclass does not override a parameter,
         # use the default value from the configuration file.
         if self.model_name is None:
@@ -90,6 +98,7 @@ class BaseAgent:
         response = ollama_client.chat(
             model=self.model_name,
             messages=messages,
+            keep_alive="30m",
             options={
                 "temperature": self.temperature,
                 "top_p": self.top_p,
@@ -105,6 +114,8 @@ class BaseAgent:
             agent_name=self.__class__.__name__,
             prompt_tokens=prompt_tokens,
             response_tokens=response_tokens,
+            client_email=self.client_email,
+            user_id=getattr(self, "current_user_id", None),
         )
 
         return (response["message"].get("content") or "").strip()
@@ -129,6 +140,8 @@ class BaseAgent:
             agent_name=self.__class__.__name__,
             prompt_tokens=prompt_tokens,
             response_tokens=response_tokens,
+            client_email=self.client_email,
+            user_id=getattr(self, "current_user_id", None),
         )
         return (response["message"].get("content") or "").strip()
     @staticmethod

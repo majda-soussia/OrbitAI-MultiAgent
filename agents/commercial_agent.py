@@ -28,7 +28,15 @@ OFF_TOPIC_REFUSAL = (
     "Sorry, I am the Orbit AI Assistant and I can only answer questions related to "
     "Orbit products, Industry 4.0, Energy Management and Industrial IoT."
 )
+PROFILE_EXTRACTION_PROMPT = """Extract structured facts from this customer message, if present.
+Only extract what is EXPLICITLY stated — never guess or infer a number/sector that isn't
+clearly mentioned.
 
+Customer message: "{message}"
+
+Respond with ONLY this JSON, nothing else:
+{{"industry_type": "<sector name or null>", "machine_count": <integer or null>}}
+"""
 TOPIC_CLASSIFIER_PROMPT = """You are a strict topic classifier for a B2B industrial sales assistant.
 
 The assistant (Orbit AI) may ONLY discuss: Energy Management, Industry 4.0, Industrial IoT,
@@ -91,7 +99,7 @@ PRICING_KEYWORDS = [
 # au milieu de cet écart. À revalider si le corpus data/rag/sources/
 # change significativement, ou si tu observes des faux positifs/négatifs
 # en usage réel (fallback qui se déclenche trop souvent, ou jamais).
-RAG_RELEVANCE_THRESHOLD = 0.68
+RAG_RELEVANCE_THRESHOLD = 0.45
 
 SPEC_KEYWORDS = [
     "spec", "specs", "specification", "compatib", "integrat", "protocol",
@@ -114,6 +122,18 @@ NO_SPECIFIC_INFO_FALLBACK = (
     "it accurately right now. Let me connect you with a member of our team who can give "
     "you exact information — could you share your email or preferred contact method?"
 )
+
+# Nombre max de messages (user+assistant confondus) de l'historique
+# renvoyés au modèle à chaque appel. Sans plafond, prompt_tokens grandit
+# indéfiniment au fil d'une session longue, même si le nouveau message
+# est court — voir la mesure faite avec utils/token_estimator.py.
+# 12 messages = 6 échanges complets ; compromis entre continuité de la
+# conversation (le modèle garde le fil des questions/réponses récentes)
+# et coût (au-delà, les tours les plus anciens apportent rarement plus
+# d'info utile que ce qu'ils coûtent en tokens à chaque appel suivant).
+# L'historique COMPLET reste conservé côté orchestrateur/PostgreSQL pour
+# la mémorisation persistante — seul ce qu'on ENVOIE au modèle est réduit.
+MAX_HISTORY_MESSAGES = 12
 
 
 def needs_pricing_context(question: str) -> bool:
@@ -140,7 +160,7 @@ def _filter_relevant(results: list, threshold: float = RAG_RELEVANCE_THRESHOLD) 
 def get_rag_context(question: str) -> str:
     from data.rag.retriever import retrieve, build_context_block
 
-    all_results = _filter_relevant(retrieve(question, top_k=3))
+    all_results = _filter_relevant(retrieve(question, top_k=5))
 
     if needs_pricing_context(question):
         pricing_results = _filter_relevant(retrieve(question, top_k=2, type_filter="pricing"))
@@ -214,8 +234,69 @@ class CommercialAgent(BaseAgent):
 
         return bool(result.get("in_scope", True))
 
+    @staticmethod
+    def _strip_letter_artifacts(text: str) -> str:
+        original = text.strip()
+        cleaned = original
+
+        # 1. Préambule méta avant le contenu réel
+        #    ("Certainly! Here's a concise explanation of X:")
+        cleaned = re.sub(
+            r'^\s*(certainly|sure|of course|absolutely|great question)!?\s*,?\s*'
+            r"here'?s?\s+(a|an|the)?\s*.*?:\s*\n+",
+            '',
+            cleaned,
+            flags=re.IGNORECASE,
+        ).strip()
+
+        # 2. Guillemet ouvrant détecté : la citation peut se refermer au
+        #    MILIEU du texte (suivie d'une phrase de sortie du type "Feel
+        #    free to adjust..."), pas forcément au tout dernier caractère —
+        #    on cherche donc le dernier guillemet fermant du texte et on
+        #    garde uniquement ce qu'il y a entre les deux, en jetant tout
+        #    ce qui suit la fermeture (c'est presque toujours du remplissage).
+        if cleaned[:1] in ('"', '\u201c'):
+            closing_idx = max(cleaned.rfind('"', 1), cleaned.rfind('\u201d', 1))
+            if closing_idx > 0:
+                cleaned = cleaned[1:closing_idx].strip()
+            else:
+                cleaned = cleaned[1:].strip()
+
+        # 3. Salutation d'ouverture ("Hello,", "Dear X,")
+        cleaned = re.sub(r'^\s*(hello|hi|dear)\b[^\n]*\n+', '', cleaned, flags=re.IGNORECASE).strip()
+
+        # 4. Bloc de signature ("Best regards," et tout ce qui suit :
+        #    "[Your Name]", "Orbit Engineering Solutions", etc.)
+        cleaned = re.sub(
+            r'\n+\s*(best regards|kind regards|warm regards|sincerely|cordialement|bien à vous)[,]?\s*[\s\S]*$',
+            '',
+            cleaned,
+            flags=re.IGNORECASE,
+        ).strip()
+
+        # 5. Phrase de clôture méta résiduelle, même sans guillemets
+        #    ("Feel free to adjust the details as needed!").
+        cleaned = re.sub(
+            r'\n+\s*feel free to (adjust|edit|modify|change|update)[^\n]*[.!]?\s*$',
+            '',
+            cleaned,
+            flags=re.IGNORECASE,
+        ).strip()
+
+        cleaned = cleaned.strip('"\u201c\u201d').strip()
+
+        return cleaned if cleaned else original
+
+    @staticmethod
+    def _trim_history(history: list) -> list:
+        """Ne garde que les MAX_HISTORY_MESSAGES derniers messages — voir
+        le commentaire sur la constante pour le raisonnement complet."""
+        if not history:
+            return []
+        return history[-MAX_HISTORY_MESSAGES:]
+
     def run(self, user_message: str, history: list = None) -> str:
-        history = history or []
+        history = self._trim_history(history)
 
         if not self._is_in_scope(user_message, history):
             return OFF_TOPIC_REFUSAL
@@ -247,9 +328,19 @@ class CommercialAgent(BaseAgent):
             extra_messages=history
         )
 
-        return self.clean_text_response(raw_text)
-
-
+        return self._strip_letter_artifacts(self.clean_text_response(raw_text))
+    def extract_profile_info(self, user_message: str) -> dict:
+        """Extraction légère et best-effort — ne bloque jamais la
+        conversation si le parsing échoue, renvoie juste des valeurs None."""
+        prompt = PROFILE_EXTRACTION_PROMPT.format(message=user_message)
+        raw = self.call_llm_raw(prompt, temperature=0.0, max_tokens=60)
+        result = self.parse_json_response(
+            raw, fallback={"industry_type": None, "machine_count": None}
+        )
+        return {
+            "industry_type": result.get("industry_type") or None,
+            "machine_count": result.get("machine_count") if isinstance(result.get("machine_count"), int) else None,
+        }
 if __name__ == "__main__":
 
     print("Orbit AI Assistant — Commercial Agent")

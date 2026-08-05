@@ -137,6 +137,11 @@ class OrchestratorAgent(BaseAgent):
         self.commercial_history = []
         self.last_route = "commercial"
         self.client_user_id = None
+        # Compte TOUS les messages de la session, peu importe l'agent qui
+        # a répondu — utilisé par l'admin dashboard (précédemment il ne
+        # comptait que len(commercial_history), donc sous-comptait toute
+        # session passée surtout sur Email/Reply/Planning).
+        self.total_messages = 0
         # Vrai si le dernier message du Reply Agent était une question de
         # clarification ("qui est concerné ?", "quel est le sujet ?") —
         # dans ce cas, le PROCHAIN message doit rester routé vers "reply"
@@ -235,8 +240,29 @@ class OrchestratorAgent(BaseAgent):
         self.awaiting_clarification = False
         return target
     def run(self, message: str) -> dict:
+        self.total_messages += 1
+
+        # Propage l'email du client courant à chaque agent enfant, pour
+        # que leurs appels LLM soient attribués au bon client dans le
+        # token tracker (voir base_agent.py). self.client_email est
+        # renseigné par main_api.py sur l'orchestrateur lui-même ; sans
+        # cette propagation, seuls les appels de l'orchestrateur (ex: le
+        # classifieur LLM) seraient attribués, pas ceux d'Email/Reply/
+        # Planning/Commercial. Ceci est indépendant de client_user_id,
+        # qui sert uniquement à l'accès OAuth Gmail/Calendar par utilisateur.
+        client_email = getattr(self, "client_email", None)
+        self.email_agent.client_email = client_email
+        self.planning_agent.client_email = client_email
+        self.commercial_agent.client_email = client_email
+        self.reply_agent.client_email = client_email
+
         target = self.route(message)
         user_id = getattr(self, "client_user_id", None)
+        self.email_agent.current_user_id = user_id
+        self.planning_agent.current_user_id = user_id
+        self.commercial_agent.current_user_id = user_id
+        self.reply_agent.current_user_id = user_id
+
 
         if target == "email":
             # SECURITY: never fall back to a shared/default Google token.
@@ -295,7 +321,6 @@ class OrchestratorAgent(BaseAgent):
             return self.reply_agent.revise_draft(self.last_draft_text, message)
 
         if getattr(self, "last_reply_mode", "existing") == "compose":
-            return self.reply_agent.draft_from_text(message, force_final=force_final)
             return self.reply_agent.draft_from_text(message, force_final=force_final)
         emails = self.reply_agent.get_raw_email_list(max_results=5, user_id=user_id)
         if not emails:
