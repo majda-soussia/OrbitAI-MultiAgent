@@ -9,6 +9,7 @@ import MachineDistributionChart from "../components/MachineDistributionChart";
 import PlansSplitChart from "../components/PlansSplitChart";
 import RagSourcesPanel from "../components/RagSourcesPanel";
 import TokensTimelineChart from "../components/TokensTimelineChart";
+import TokenInspectorPanel from "../components/TokenInspectorPanel";
 // import CostSummaryCard from "../components/CostSummaryCard"; // retiré du dashboard pour le moment
 
 export default function AdminPage() {
@@ -135,6 +136,7 @@ export default function AdminPage() {
           <div style={styles.column}>
             <ClientsTable clients={clients} onSelectClient={setSelectedEmail} />
             <TokensTimelineChart />
+            <TokenInspectorPanel />
             <RagSourcesPanel />
           </div>
 

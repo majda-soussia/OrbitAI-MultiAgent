@@ -1,4 +1,5 @@
 pip install ollama langchain langchain-community pyyaml requests python-dotenv
+pip install tokenizers huggingface_hub --break-system-packages
 pip install pytest
 python -m pip install faiss-cpu
 ollama pull nomic-embed-text

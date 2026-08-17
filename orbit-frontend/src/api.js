@@ -302,3 +302,11 @@ export async function setTokenPrice(pricePer1k, currency, token) {
     body: { price_per_1k_tokens: pricePer1k, currency },
   });
 }
+
+export async function inspectTokens(text, token) {
+  return authFetch("/api/admin/tokens/inspect", {
+    method: "POST",
+    token,
+    body: { text },
+  });
+}

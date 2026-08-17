@@ -11,6 +11,7 @@ from data.rag.chunker import SOURCES_DIR
 from data.rag.ingest import main as rebuild_rag_index
 from agents.orchestrator_agent import OrchestratorAgent
 from utils.token_tracker import get_summary, get_last_call_tokens, get_usage_by_client, get_usage_over_time, get_cost_summary, get_price_config, set_price_config
+from utils.token_inspector import inspect_tokens
 from utils.settings import is_debug_enabled, set_debug
 from utils.client_memory import (
     get_client_memory, save_client_turn, check_quota,
@@ -426,6 +427,25 @@ def admin_set_token_price(payload: TokenPriceUpdate, _admin: dict = Depends(requ
     if payload.price_per_1k_tokens < 0:
         raise HTTPException(status_code=400, detail="Le prix ne peut pas être négatif.")
     return set_price_config(payload.price_per_1k_tokens, payload.currency)
+
+
+class TokenInspectRequest(BaseModel):
+    text: str
+
+
+@app.post("/api/admin/tokens/inspect")
+def admin_inspect_tokens(payload: TokenInspectRequest, _admin: dict = Depends(require_admin)):
+    """Outil de vérification/audit : montre comment un texte est réellement
+    découpé par le tokenizer Qwen2.5, avec le détail des fragments — ce
+    qu'Ollama ne renvoie jamais (juste un nombre). N'affecte pas et ne
+    remplace pas log_usage(), qui reste basé sur les chiffres réels
+    rapportés par Ollama après chaque appel."""
+    if not payload.text or not payload.text.strip():
+        raise HTTPException(status_code=400, detail="Le texte ne peut pas être vide.")
+    try:
+        return inspect_tokens(payload.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Échec de l'inspection : {e}")
 
 
 @app.get("/api/admin/usage_by_client")
