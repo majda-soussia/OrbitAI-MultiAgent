@@ -1,0 +1,12 @@
+{
+  "standard": {
+    "max_history_messages": 6,
+    "rag_top_k": 3,
+    "description": "Conversations plus courtes, contexte RAG plus restreint — coût par appel maîtrisé."
+  },
+  "premium": {
+    "max_history_messages": 20,
+    "rag_top_k": 6,
+    "description": "Mémoire longue et contexte RAG plus riche — meilleure qualité, coût par appel plus élevé."
+  }
+}

@@ -6,20 +6,23 @@ import {
   disconnectGoogle,
 } from "../api";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const API_BASE = "http://localhost:8000";
 
 export default function IntegrationsPage() {
   const { accessToken } = useAuth();
- 
+  const { isDark } = useTheme();
+  const styles = isDark ? darkStyles : lightStyles;
+
   const [connected, setConnected] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [error, setError] = useState(null);
- 
+
   const [emailResults, setEmailResults] = useState(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState(null);
- 
+
   const [planningResult, setPlanningResult] = useState(null);
   const [planningLoading, setPlanningLoading] = useState(false);
   const [planningError, setPlanningError] = useState(null);
@@ -73,7 +76,7 @@ export default function IntegrationsPage() {
       setEmailResults(null);
       setPlanningResult(null);
     } catch (err) {
-      setError(err.message ||"Unable to disconnect your Google account.");
+      setError(err.message || "Unable to disconnect your Google account.");
     }
   }
 
@@ -118,117 +121,125 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={{ margin: 0 }}>Integrations</h1>
-      <p style={{ margin: "4px 0 24px", fontSize: 14, color: "#64748b" }}>
-        Connect your Google account to use the Email and Planning agents.
-      </p>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <h1 style={{ margin: 0, color: styles.titleColor }}>Integrations</h1>
+        <p style={{ margin: "4px 0 24px", fontSize: 14, color: styles.mutedText }}>
+          Connect your Google account to use the Email and Planning agents.
+        </p>
 
-      {/* Connexion Google */}
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Google (Gmail & Calendar)</h3>
+        {/* Connexion Google */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Google (Gmail & Calendar)</h3>
 
-        {loadingStatus ? (
-          <p style={{ color: "#64748b", fontSize: 14 }}>Checking connection status...</p>
-        ) : error ? (
-          <p style={{ color: "#dc2626", fontSize: 14 }}>{error}</p>
-        ) : connected ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={styles.badgeConnected}>✓ Connected</span>
-            <button style={styles.secondaryButton} onClick={handleDisconnect}>
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={styles.badgeDisconnected}>Not connected</span>
-            <button style={styles.button} onClick={handleConnect}>
-              Connecter Google
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Email Agent */}
-      <div style={styles.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={styles.cardTitle}>Email Agent</h3>
-          <button
-            style={styles.button}
-            onClick={handleRunEmailAgent}
-            disabled={!connected || emailLoading}
-          >
-            {emailLoading ? "Analyzing..." : "Analyze my emails"}
-          </button>
+          {loadingStatus ? (
+            <p style={{ color: styles.mutedText, fontSize: 14 }}>Checking connection status...</p>
+          ) : error ? (
+            <p style={{ color: "#ef4444", fontSize: 14 }}>{error}</p>
+          ) : connected ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={styles.badgeConnected}>✓ Connected</span>
+              <button style={styles.secondaryButton} onClick={handleDisconnect}>
+                Disconnect
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={styles.badgeDisconnected}>Not connected</span>
+              <button style={styles.button} onClick={handleConnect}>
+                Connecter Google
+              </button>
+            </div>
+          )}
         </div>
 
-        {!connected && (
-          <p style={{ fontSize: 13, color: "#94a3b8" }}>Connect your Google account to use this agent.</p>
-        )}
-        {emailError && <p style={{ color: "#dc2626", fontSize: 14 }}>{emailError}</p>}
+        {/* Email Agent */}
+        <div style={styles.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={styles.cardTitle}>Email Agent</h3>
+            <button
+              style={styles.button}
+              onClick={handleRunEmailAgent}
+              disabled={!connected || emailLoading}
+            >
+              {emailLoading ? "Analyzing..." : "Analyze my emails"}
+            </button>
+          </div>
 
-        {emailResults && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {emailResults.map((mail, i) => (
-              <div key={i} style={styles.emailRow}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{mail.subject}</span>
-                  <span style={priorityBadgeStyle(mail.priority)}>{mail.priority}</span>
+          {!connected && (
+            <p style={{ fontSize: 13, color: styles.mutedText }}>Connect your Google account to use this agent.</p>
+          )}
+          {emailError && <p style={{ color: "#ef4444", fontSize: 14 }}>{emailError}</p>}
+
+          {emailResults && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {emailResults.map((mail, i) => (
+                <div key={i} style={styles.emailRow}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontWeight: 600, fontSize: 14, color: styles.titleColor }}>{mail.subject}</span>
+                    <span style={priorityBadgeStyle(mail.priority, isDark)}>{mail.priority}</span>
+                  </div>
+                  <p style={{ margin: "0 0 4px", fontSize: 12, color: styles.mutedText }}>{mail.sender}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: styles.titleColor }}>{mail.summary}</p>
+                  <span style={styles.categoryTag}>{mail.category}</span>
                 </div>
-                <p style={{ margin: "0 0 4px", fontSize: 12, color: "#64748b" }}>{mail.sender}</p>
-                <p style={{ margin: 0, fontSize: 13 }}>{mail.summary}</p>
-                <span style={styles.categoryTag}>{mail.category}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Planning Agent */}
-      <div style={styles.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={styles.cardTitle}>Planning Agent</h3>
-          <button
-            style={styles.button}
-            onClick={handleRunPlanningAgent}
-            disabled={!connected || planningLoading}
-          >
-            {planningLoading ? "Generating..." : "Generate my briefing"}
-          </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {!connected && (
-          <p style={{ fontSize: 13, color: "#94a3b8" }}>Connect your Google account to use this agent.</p>
-        )}
-        {planningError && <p style={{ color: "#dc2626", fontSize: 14 }}>{planningError}</p>}
-
-        {planningResult && (
-          <div>
-            <p style={{ whiteSpace: "pre-wrap", fontSize: 14, marginBottom: 12 }}>
-              {planningResult.briefing}
-            </p>
-            {planningResult.conflicts?.length > 0 && (
-              <div style={styles.conflictBox}>
-                {planningResult.conflicts.map((c, i) => (
-                  <p key={i} style={{ margin: "4px 0", fontSize: 13 }}>
-                    ⚠ {c.event_a} ({c.time_a})overlaps with {c.event_b} ({c.time_b})
-                  </p>
-                ))}
-              </div>
-            )}
+        {/* Planning Agent */}
+        <div style={styles.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={styles.cardTitle}>Planning Agent</h3>
+            <button
+              style={styles.button}
+              onClick={handleRunPlanningAgent}
+              disabled={!connected || planningLoading}
+            >
+              {planningLoading ? "Generating..." : "Generate my briefing"}
+            </button>
           </div>
-        )}
+
+          {!connected && (
+            <p style={{ fontSize: 13, color: styles.mutedText }}>Connect your Google account to use this agent.</p>
+          )}
+          {planningError && <p style={{ color: "#ef4444", fontSize: 14 }}>{planningError}</p>}
+
+          {planningResult && (
+            <div>
+              <p style={{ whiteSpace: "pre-wrap", fontSize: 14, marginBottom: 12, color: styles.titleColor }}>
+                {planningResult.briefing}
+              </p>
+              {planningResult.conflicts?.length > 0 && (
+                <div style={styles.conflictBox}>
+                  {planningResult.conflicts.map((c, i) => (
+                    <p key={i} style={{ margin: "4px 0", fontSize: 13, color: styles.titleColor }}>
+                      ⚠ {c.event_a} ({c.time_a}) overlaps with {c.event_b} ({c.time_b})
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function priorityBadgeStyle(priority) {
-  const colors = {
+function priorityBadgeStyle(priority, isDark) {
+  const lightColors = {
     High: { background: "#fef2f2", color: "#dc2626" },
     Medium: { background: "#fffbeb", color: "#d97706" },
     Low: { background: "#f1f5f9", color: "#64748b" },
   };
+  const darkColors = {
+    High: { background: "#2a1416", color: "#f87171" },
+    Medium: { background: "#2a2214", color: "#fbbf24" },
+    Low: { background: "#151b2b", color: "#8b93a7" },
+  };
+  const colors = isDark ? darkColors : lightColors;
   return {
     ...(colors[priority] || colors.Low),
     fontSize: 11,
@@ -238,15 +249,37 @@ function priorityBadgeStyle(priority) {
   };
 }
 
-const styles = {
-  container: { padding: 30, fontFamily: "system-ui, sans-serif", maxWidth: 700, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 },
-  card: { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px" },
-  cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#0f172a" },
-  button: { padding: "8px 16px", borderRadius: 8, border: "none", background: "#2563eb", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 13 },
-  secondaryButton: { padding: "8px 16px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 13 },
-  badgeConnected: { background: "#f0fdf4", color: "#16a34a", fontSize: 13, fontWeight: 600, padding: "4px 10px", borderRadius: 6 },
-  badgeDisconnected: { background: "#f1f5f9", color: "#64748b", fontSize: 13, fontWeight: 600, padding: "4px 10px", borderRadius: 6 },
-  emailRow: { border: "1px solid #f1f5f9", borderRadius: 8, padding: 12 },
-  categoryTag: { display: "inline-block", marginTop: 6, fontSize: 11, background: "#eff6ff", color: "#2563eb", padding: "2px 8px", borderRadius: 6 },
-  conflictBox: { background: "#fef2f2", borderRadius: 8, padding: 10, marginTop: 8 },
-};
+function baseStyles({ pageBg, cardBg, cardBorder, titleColor, mutedText, secondaryBtnBg, secondaryBtnBorder, secondaryBtnColor, emailRowBorder, categoryTagBg, categoryTagColor, badgeConnectedBg, badgeConnectedColor, badgeDisconnectedBg, badgeDisconnectedColor, conflictBg }) {
+  return {
+    page: { background: pageBg, minHeight: "calc(100vh - 49px)" },
+    container: { padding: 30, fontFamily: "system-ui, sans-serif", maxWidth: 700, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 },
+    titleColor, mutedText,
+    card: { background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 12, padding: "16px 20px" },
+    cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: titleColor },
+    button: { padding: "8px 16px", borderRadius: 8, border: "none", background: "#2563eb", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 13 },
+    secondaryButton: { padding: "8px 16px", borderRadius: 8, border: `1px solid ${secondaryBtnBorder}`, background: secondaryBtnBg, color: secondaryBtnColor, cursor: "pointer", fontSize: 13 },
+    badgeConnected: { background: badgeConnectedBg, color: badgeConnectedColor, fontSize: 13, fontWeight: 600, padding: "4px 10px", borderRadius: 6 },
+    badgeDisconnected: { background: badgeDisconnectedBg, color: badgeDisconnectedColor, fontSize: 13, fontWeight: 600, padding: "4px 10px", borderRadius: 6 },
+    emailRow: { border: `1px solid ${emailRowBorder}`, borderRadius: 8, padding: 12 },
+    categoryTag: { display: "inline-block", marginTop: 6, fontSize: 11, background: categoryTagBg, color: categoryTagColor, padding: "2px 8px", borderRadius: 6 },
+    conflictBox: { background: conflictBg, borderRadius: 8, padding: 10, marginTop: 8 },
+  };
+}
+
+const lightStyles = baseStyles({
+  pageBg: "#f8fafc", cardBg: "#fff", cardBorder: "#e2e8f0", titleColor: "#0f172a", mutedText: "#64748b",
+  secondaryBtnBg: "#fff", secondaryBtnBorder: "#cbd5e1", secondaryBtnColor: "#64748b",
+  emailRowBorder: "#f1f5f9", categoryTagBg: "#eff6ff", categoryTagColor: "#2563eb",
+  badgeConnectedBg: "#f0fdf4", badgeConnectedColor: "#16a34a",
+  badgeDisconnectedBg: "#f1f5f9", badgeDisconnectedColor: "#64748b",
+  conflictBg: "#fef2f2",
+});
+
+const darkStyles = baseStyles({
+  pageBg: "#05070d", cardBg: "#0d1119", cardBorder: "#232b40", titleColor: "#e8eaf0", mutedText: "#8b93a7",
+  secondaryBtnBg: "#151b2b", secondaryBtnBorder: "#232b40", secondaryBtnColor: "#c3c9d6",
+  emailRowBorder: "#232b40", categoryTagBg: "#151b2b", categoryTagColor: "#5b9bff",
+  badgeConnectedBg: "#0f2418", badgeConnectedColor: "#4ade80",
+  badgeDisconnectedBg: "#151b2b", badgeDisconnectedColor: "#8b93a7",
+  conflictBg: "#2a1416",
+});

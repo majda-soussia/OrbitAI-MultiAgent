@@ -1,8 +1,12 @@
 import { useMemo } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const COLORS = ["#2563eb", "#6366f1", "#8b5cf6", "#a78bfa", "#3b82f6", "#0ea5e9", "#14b8a6"];
 
 export default function IndustryChart({ clients }) {
+  const { isDark } = useTheme();
+  const styles = isDark ? darkStyles : lightStyles;
+
   const data = useMemo(() => {
     const counts = {};
     Object.values(clients || {}).forEach((c) => {
@@ -18,7 +22,7 @@ export default function IndustryChart({ clients }) {
     <div style={styles.card}>
       <h3 style={styles.cardTitle}>Industries</h3>
       {data.length === 0 ? (
-        <p style={{ fontSize: 13, color: "#94a3b8" }}>No client data yet.</p>
+        <p style={{ fontSize: 13, color: styles.mutedText }}>No client data yet.</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {data.map(([industry, count], i) => (
@@ -43,10 +47,16 @@ export default function IndustryChart({ clients }) {
   );
 }
 
-const styles = {
-  card: { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
-  cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#0f172a" },
-  label: { width: 110, fontSize: 13, color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  barTrack: { flex: 1, height: 8, background: "#eff6ff", borderRadius: 4, overflow: "hidden" },
-  value: { fontSize: 13, width: 30, textAlign: "right", color: "#0f172a" },
-};
+function baseStyles({ cardBg, cardBorder, titleColor, mutedText, barTrackBg }) {
+  return {
+    card: { background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
+    cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: titleColor },
+    mutedText,
+    label: { width: 110, fontSize: 13, color: mutedText, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+    barTrack: { flex: 1, height: 8, background: barTrackBg, borderRadius: 4, overflow: "hidden" },
+    value: { fontSize: 13, width: 30, textAlign: "right", color: titleColor },
+  };
+}
+
+const lightStyles = baseStyles({ cardBg: "#fff", cardBorder: "#e2e8f0", titleColor: "#0f172a", mutedText: "#64748b", barTrackBg: "#eff6ff" });
+const darkStyles = baseStyles({ cardBg: "#0d1119", cardBorder: "#232b40", titleColor: "#e8eaf0", mutedText: "#8b93a7", barTrackBg: "#151b2b" });

@@ -1,5 +1,6 @@
 from agents.base_agent import BaseAgent
 from utils.settings import is_debug_enabled
+from utils.token_policy import get_policy_for_plan
 import re
 
 ORBIT_JARGON_TERMS = [
@@ -123,17 +124,10 @@ NO_SPECIFIC_INFO_FALLBACK = (
     "you exact information — could you share your email or preferred contact method?"
 )
 
-# Nombre max de messages (user+assistant confondus) de l'historique
-# renvoyés au modèle à chaque appel. Sans plafond, prompt_tokens grandit
-# indéfiniment au fil d'une session longue, même si le nouveau message
-# est court — voir la mesure faite avec utils/token_estimator.py.
-# 12 messages = 6 échanges complets ; compromis entre continuité de la
-# conversation (le modèle garde le fil des questions/réponses récentes)
-# et coût (au-delà, les tours les plus anciens apportent rarement plus
-# d'info utile que ce qu'ils coûtent en tokens à chaque appel suivant).
-# L'historique COMPLET reste conservé côté orchestrateur/PostgreSQL pour
-# la mémorisation persistante — seul ce qu'on ENVOIE au modèle est réduit.
-MAX_HISTORY_MESSAGES = 12
+# Le plafond d'historique ET le top_k RAG sont désormais définis PAR PLAN
+# dans config/token_policy.json (voir utils/token_policy.py) — plus de
+# valeur unique codée en dur ici. Standard et Premium peuvent avoir des
+# curseurs qualité/coût différents, ajustables sans redéployer de code.
 
 
 def needs_pricing_context(question: str) -> bool:
@@ -157,17 +151,17 @@ def _filter_relevant(results: list, threshold: float = RAG_RELEVANCE_THRESHOLD) 
     return [r for r in results if r["score"] >= threshold]
 
 
-def get_rag_context(question: str) -> str:
+def get_rag_context(question: str, top_k: int = 5) -> str:
     from data.rag.retriever import retrieve, build_context_block
 
-    all_results = _filter_relevant(retrieve(question, top_k=5))
+    all_results = _filter_relevant(retrieve(question, top_k=top_k))
 
     if needs_pricing_context(question):
         pricing_results = _filter_relevant(retrieve(question, top_k=2, type_filter="pricing"))
         # fusion sans doublons, pricing en priorité
         seen_ids = {r["text"] for r in pricing_results}
         merged = pricing_results + [r for r in all_results if r["text"] not in seen_ids]
-        return build_context_block(merged[:4])
+        return build_context_block(merged[: max(top_k, 2) + 1])
 
     return build_context_block(all_results)
 
@@ -288,21 +282,22 @@ class CommercialAgent(BaseAgent):
         return cleaned if cleaned else original
 
     @staticmethod
-    def _trim_history(history: list) -> list:
-        """Ne garde que les MAX_HISTORY_MESSAGES derniers messages — voir
-        le commentaire sur la constante pour le raisonnement complet."""
+    def _trim_history(history: list, max_messages: int) -> list:
+        """Ne garde que les max_messages derniers messages — la valeur
+        vient de token_policy.json (par plan), voir run()."""
         if not history:
             return []
-        return history[-MAX_HISTORY_MESSAGES:]
+        return history[-max_messages:]
 
-    def run(self, user_message: str, history: list = None) -> str:
-        history = self._trim_history(history)
+    def run(self, user_message: str, history: list = None, plan: str = "standard") -> str:
+        policy = get_policy_for_plan(plan)
+        history = self._trim_history(history, max_messages=policy["max_history_messages"])
 
         if not self._is_in_scope(user_message, history):
             return OFF_TOPIC_REFUSAL
 
         try:
-            rag_context = get_rag_context(user_message)
+            rag_context = get_rag_context(user_message, top_k=policy["rag_top_k"])
         except Exception as e:
             print(f"[CommercialAgent] RAG context error: {e}")
             rag_context = ""

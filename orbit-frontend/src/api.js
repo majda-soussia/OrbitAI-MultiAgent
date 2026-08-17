@@ -3,7 +3,6 @@ const ACCESS_TOKEN_KEY = "orbit_access_token";
 const REFRESH_TOKEN_KEY = "orbit_refresh_token";
 let onTokenRefreshed = null;
 let onAuthExpired = null;
-
 export function setAuthCallbacks({ onRefreshed, onExpired } = {}) {
   onTokenRefreshed = onRefreshed || null;
   onAuthExpired = onExpired || null;
@@ -191,29 +190,115 @@ export async function getUsageByClient(token) {
   return authFetch("/api/admin/usage_by_client", { token });
 }
 
-export async function getClientDetail(email, token) {
-  return authFetch(`/api/admin/clients/${encodeURIComponent(email)}/detail`, { token });
-}
-
-export async function resetClientHistory(email, token) {
-  return authFetch(`/api/admin/clients/${encodeURIComponent(email)}/reset_history`, {
-    method: "POST",
-    token,
-  });
-}
-
-export async function toggleClientMemory(email, enabled, token) {
-  return authFetch(`/api/admin/clients/${encodeURIComponent(email)}/toggle_memory`, {
-    method: "POST",
-    token,
-    body: { enabled },
-  });
-}
-
 export async function setClientPlan(clientEmail, plan, token) {
   return authFetch("/api/admin/set_plan", {
     method: "POST",
     token,
     body: { client_email: clientEmail, plan },
+  });
+}
+export async function resetClientQuota(clientEmail, token) {
+  return authFetch("/api/admin/reset_quota", {
+    method: "POST",
+    token,
+    body: { client_email: clientEmail },
+  });
+}
+
+export async function getClientDetail(clientEmail, token) {
+  return authFetch(`/api/admin/clients/${encodeURIComponent(clientEmail)}/detail`, { token });
+}
+export async function resetClientHistory(clientEmail, token) {
+  return authFetch(`/api/admin/clients/${encodeURIComponent(clientEmail)}/reset_history`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function toggleClientMemory(clientEmail, enabled, token) {
+  return authFetch(`/api/admin/clients/${encodeURIComponent(clientEmail)}/toggle_memory`, {
+    method: "POST",
+    token,
+    body: { enabled },
+  });
+}
+// ---------------------------------------------------------------------
+// RAG SOURCES
+// ---------------------------------------------------------------------
+
+export async function getRagSources(token) {
+  return authFetch("/api/admin/rag/sources", { token });
+}
+
+export async function deleteRagSource(filename, token) {
+  return authFetch(`/api/admin/rag/sources/${encodeURIComponent(filename)}`, {
+    method: "DELETE",
+    token,
+  });
+}
+
+export async function reindexRagSources(token) {
+  return authFetch("/api/admin/rag/reindex", { method: "POST", token });
+}
+
+// Upload utilise FormData, donc on ne passe pas par authFetch (qui force JSON).
+export async function uploadRagSource(file, token) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  let res = await fetch(`${API_BASE}/api/admin/rag/sources`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (res.status === 401) {
+    const newToken = await tryRefreshAccessToken();
+    if (newToken) {
+      res = await fetch(`${API_BASE}/api/admin/rag/sources`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${newToken}` },
+        body: formData,
+      });
+    } else {
+      onAuthExpired?.();
+    }
+  }
+
+  if (!res.ok) {
+    let detail = `Erreur API: ${res.status}`;
+    try {
+      const data = await res.json();
+      if (data?.detail) detail = data.detail;
+    } catch {
+      // pas de JSON dans la réponse
+    }
+    throw new Error(detail);
+  }
+
+  return res.json();
+}
+
+// ---------------------------------------------------------------------
+// TOKENS — évolution dans le temps + coût
+// ---------------------------------------------------------------------
+
+export async function getTokensTimeseries(days = 30, token) {
+  return authFetch(`/api/admin/tokens/timeseries?days=${days}`, { token });
+}
+
+export async function getTokensCost(token) {
+  return authFetch("/api/admin/tokens/cost", { token });
+}
+
+export async function getTokenPrice(token) {
+  return authFetch("/api/admin/tokens/price", { token });
+}
+
+export async function setTokenPrice(pricePer1k, currency, token) {
+  return authFetch("/api/admin/tokens/price", {
+    method: "POST",
+    token,
+    body: { price_per_1k_tokens: pricePer1k, currency },
   });
 }

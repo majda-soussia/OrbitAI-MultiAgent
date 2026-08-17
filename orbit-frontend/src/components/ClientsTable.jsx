@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const SORT_OPTIONS = [
   { value: "tokens_desc", label: "Tokens (high to low)" },
@@ -8,6 +9,9 @@ const SORT_OPTIONS = [
 ];
 
 export default function ClientsTable({ clients, onSelectClient }) {
+  const { isDark } = useTheme();
+  const styles = isDark ? darkStyles : lightStyles;
+
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState("all");
   const [industryFilter, setIndustryFilter] = useState("all");
@@ -53,7 +57,7 @@ export default function ClientsTable({ clients, onSelectClient }) {
     <div style={styles.card}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <h3 style={styles.cardTitle}>Clients</h3>
-        <span style={{ fontSize: 13, color: "#94a3b8" }}>{filtered.length} of {rows.length}</span>
+        <span style={{ fontSize: 13, color: styles.mutedText }}>{filtered.length} of {rows.length}</span>
       </div>
 
       <div style={styles.filterRow}>
@@ -113,7 +117,7 @@ export default function ClientsTable({ clients, onSelectClient }) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ ...styles.td, textAlign: "center", color: "#94a3b8" }}>
+                <td colSpan={6} style={{ ...styles.td, textAlign: "center", color: styles.mutedText }}>
                   No clients match these filters.
                 </td>
               </tr>
@@ -122,7 +126,7 @@ export default function ClientsTable({ clients, onSelectClient }) {
         </table>
       </div>
 
-      <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>
+      <p style={{ fontSize: 11, color: styles.mutedText, marginTop: 8 }}>
         Google / Memory columns will need a bulk-status endpoint to add without
         an N+1 query per client — not included yet.
       </p>
@@ -130,39 +134,31 @@ export default function ClientsTable({ clients, onSelectClient }) {
   );
 }
 
-const styles = {
-  card: { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
-  cardTitle: { margin: 0, fontSize: 16, fontWeight: 600, color: "#0f172a" },
-  filterRow: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 },
-  searchInput: {
-    flex: "1 1 200px",
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: "1px solid #cbd5e1",
-    fontSize: 13,
-    outline: "none",
-  },
-  select: {
-    padding: "8px 10px",
-    borderRadius: 8,
-    border: "1px solid #cbd5e1",
-    fontSize: 13,
-    background: "#fff",
-    color: "#334155",
-  },
-  tableWrap: { overflowX: "auto" },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: {
-    textAlign: "left",
-    padding: "8px 10px",
-    color: "#64748b",
-    fontWeight: 600,
-    borderBottom: "1px solid #e2e8f0",
-    whiteSpace: "nowrap",
-  },
-  row: { cursor: "pointer", transition: "background 0.15s" },
-  td: { padding: "10px 10px", borderBottom: "1px solid #f1f5f9", color: "#0f172a" },
-  muted: { color: "#cbd5e1" },
-  badgePremium: { background: "#eff6ff", color: "#2563eb", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6 },
-  badgeStandard: { background: "#f1f5f9", color: "#64748b", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6 },
-};
+function baseStyles({ cardBg, cardBorder, titleColor, mutedText, inputBg, inputBorder, inputColor, thBorder, rowHover, tdBorder }) {
+  return {
+    card: { background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
+    cardTitle: { margin: 0, fontSize: 16, fontWeight: 600, color: titleColor },
+    mutedText,
+    filterRow: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 },
+    searchInput: { flex: "1 1 200px", padding: "8px 12px", borderRadius: 8, border: `1px solid ${inputBorder}`, fontSize: 13, outline: "none", background: inputBg, color: inputColor },
+    select: { padding: "8px 10px", borderRadius: 8, border: `1px solid ${inputBorder}`, fontSize: 13, background: inputBg, color: inputColor },
+    tableWrap: { overflowX: "auto" },
+    table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
+    th: { textAlign: "left", padding: "8px 10px", color: mutedText, fontWeight: 600, borderBottom: `1px solid ${thBorder}`, whiteSpace: "nowrap" },
+    row: { cursor: "pointer" },
+    td: { padding: "10px 10px", borderBottom: `1px solid ${tdBorder}`, color: titleColor },
+    muted: { color: mutedText },
+    badgePremium: { background: "#eff6ff", color: "#2563eb", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6 },
+    badgeStandard: { background: "#f1f5f9", color: "#64748b", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6 },
+  };
+}
+
+const lightStyles = baseStyles({
+  cardBg: "#fff", cardBorder: "#e2e8f0", titleColor: "#0f172a", mutedText: "#94a3b8",
+  inputBg: "#fff", inputBorder: "#cbd5e1", inputColor: "#334155", thBorder: "#e2e8f0", tdBorder: "#f1f5f9",
+});
+
+const darkStyles = baseStyles({
+  cardBg: "#0d1119", cardBorder: "#232b40", titleColor: "#e8eaf0", mutedText: "#5b6478",
+  inputBg: "#151b2b", inputBorder: "#232b40", inputColor: "#e8eaf0", thBorder: "#232b40", tdBorder: "#161c2c",
+});

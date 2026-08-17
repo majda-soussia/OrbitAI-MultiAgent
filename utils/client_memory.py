@@ -15,7 +15,7 @@ def _load_plans() -> dict:
 
 def _get_user_by_email(cur, email: str):
     cur.execute(
-        "SELECT id, plan, token_limit, created_at, memory_enabled FROM users WHERE email = %s;",
+        "SELECT id, plan, token_limit, created_at, memory_enabled, quota_reset_at FROM users WHERE email = %s;",
         (email,),
     )
     return cur.fetchone()
@@ -159,9 +159,10 @@ def set_client_plan(client_id: str, plan: str):
 
 def get_all_clients() -> dict:
     """
-    Returns the same shape as before: { email: {plan, tokens_used, ...} },
-    but sourced from client_token_summary + last activity from
-    conversation_history.
+    Returns the same shape as before: { email: {plan, tokens_used, ...} }.
+    tokens_used est maintenant calculé directement depuis token_usage,
+    filtré par quota_reset_at (voir reset_client_quota) — client_token_summary
+    n'a aucune notion de reset, donc on ne peut plus s'appuyer dessus ici.
     """
     conn = get_connection()
     try:
@@ -169,16 +170,18 @@ def get_all_clients() -> dict:
         cur.execute(
             """
             SELECT
-                s.email,
-                s.plan,
-                s.token_limit,
-                s.tokens_used,
+                u.email, u.plan, u.token_limit, u.quota_reset_at,
+                COALESCE((
+                    SELECT SUM(tu.total_tokens) FROM token_usage tu
+                    WHERE tu.user_id = u.id
+                      AND tu.created_at > COALESCE(u.quota_reset_at, '-infinity'::timestamptz)
+                ), 0) AS tokens_used,
                 (
                     SELECT MAX(ch.created_at)
                     FROM conversation_history ch
-                    WHERE ch.user_id = s.id
+                    WHERE ch.user_id = u.id
                 ) AS last_seen
-            FROM client_token_summary s;
+            FROM users u;
             """
         )
         rows = cur.fetchall()
@@ -255,43 +258,85 @@ def check_quota(client_id: str) -> dict:
         "token_limit": 5000,
         "remaining": 3766
     }
+
+    Interroge désormais token_usage DIRECTEMENT (plus client_token_summary),
+    filtré sur created_at > quota_reset_at — ce qui permet à
+    reset_client_quota() de "repartir à zéro" sans effacer l'historique
+    réel d'usage, qui reste consultable ailleurs (get_usage_by_user_agent,
+    get_client_detail) pour le diagnostic admin.
     """
     conn = get_connection()
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT plan, token_limit, tokens_used FROM client_token_summary WHERE email = %s;",
+            "SELECT id, plan, token_limit, quota_reset_at FROM users WHERE email = %s;",
             (client_id,),
         )
-        row = cur.fetchone()
+        user = cur.fetchone()
+
+        if not user:
+            # Unknown user: default to standard limits, 0 used (mirrors the
+            # old JSON behavior for a client_id never seen before).
+            plans = _load_plans()
+            token_limit = plans.get("standard", {}).get("token_limit", 5000)
+            return {
+                "allowed": True,
+                "plan": "standard",
+                "tokens_used": 0,
+                "token_limit": token_limit,
+                "remaining": token_limit,
+            }
+
+        cur.execute(
+            """
+            SELECT COALESCE(SUM(total_tokens), 0) AS tokens_used
+            FROM token_usage
+            WHERE user_id = %s
+              AND created_at > COALESCE(%s, '-infinity'::timestamptz);
+            """,
+            (user["id"], user["quota_reset_at"]),
+        )
+        usage_row = cur.fetchone()
     finally:
         cur.close()
         conn.close()
 
-    if not row:
-        # Unknown user: default to standard limits, 0 used (mirrors the
-        # old JSON behavior for a client_id never seen before).
-        plans = _load_plans()
-        token_limit = plans.get("standard", {}).get("token_limit", 5000)
-        return {
-            "allowed": True,
-            "plan": "standard",
-            "tokens_used": 0,
-            "token_limit": token_limit,
-            "remaining": token_limit,
-        }
-
-    token_limit = row["token_limit"]
-    tokens_used = row["tokens_used"]
+    token_limit = user["token_limit"]
+    tokens_used = usage_row["tokens_used"]
     remaining = max(0, token_limit - tokens_used)
 
     return {
         "allowed": tokens_used < token_limit,
-        "plan": row["plan"],
+        "plan": user["plan"],
         "tokens_used": tokens_used,
         "token_limit": token_limit,
         "remaining": remaining,
     }
+
+
+def reset_client_quota(client_id: str) -> None:
+    """
+    Réinitialise le compteur de tokens d'un client à partir de MAINTENANT
+    — pour un client bloqué qui a dépassé sa limite et doit pouvoir
+    continuer à utiliser le service (renouvellement manuel, geste
+    commercial, nouveau cycle mensuel...).
+
+    N'efface RIEN dans token_usage : tout l'historique réel d'usage reste
+    intact et consultable (get_usage_by_user_agent, get_client_detail)
+    pour le diagnostic admin — seul le SEUIL utilisé par check_quota()
+    pour calculer "tokens_used" avance à maintenant.
+    """
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET quota_reset_at = now() WHERE email = %s;",
+            (client_id,),
+        )
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
 def upsert_client_profile(user_id: int, industry_type: str = None, machine_count: int = None) -> None:
     """Met à jour uniquement les champs non-None détectés dans ce tour —
     ne jamais écraser une valeur déjà connue par un None si ce tour-ci
@@ -355,13 +400,16 @@ def get_client_detail(email: str) -> dict | None:
         cur.execute(
             """
             SELECT
-                u.id, u.plan, u.token_limit, u.created_at, u.memory_enabled,
-                s.tokens_used,
+                u.id, u.plan, u.token_limit, u.created_at, u.memory_enabled, u.quota_reset_at,
                 p.industry_type, p.machine_count, p.updated_at AS profile_updated_at,
                 (SELECT COUNT(*) FROM conversation_history ch WHERE ch.user_id = u.id) AS conversation_count,
-                (SELECT MAX(ch.created_at) FROM conversation_history ch WHERE ch.user_id = u.id) AS last_seen
+                (SELECT MAX(ch.created_at) FROM conversation_history ch WHERE ch.user_id = u.id) AS last_seen,
+                COALESCE((
+                    SELECT SUM(tu.total_tokens) FROM token_usage tu
+                    WHERE tu.user_id = u.id
+                      AND tu.created_at > COALESCE(u.quota_reset_at, '-infinity'::timestamptz)
+                ), 0) AS tokens_used
             FROM users u
-            LEFT JOIN client_token_summary s ON s.email = u.email
             LEFT JOIN client_profile p ON p.user_id = u.id
             WHERE u.email = %s;
             """,
@@ -408,6 +456,7 @@ def get_client_detail(email: str) -> dict | None:
         "created_at": row["created_at"].isoformat() if row["created_at"] else None,
         "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None,
         "memory_enabled": row["memory_enabled"] if row["memory_enabled"] is not None else True,
+        "quota_reset_at": row["quota_reset_at"].isoformat() if row["quota_reset_at"] else None,
         "profile": {
             "industry_type": row["industry_type"],
             "machine_count": row["machine_count"],

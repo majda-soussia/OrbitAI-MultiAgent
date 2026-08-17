@@ -1,18 +1,23 @@
 import uuid
-from fastapi import FastAPI, HTTPException, Depends
+import json
+from datetime import datetime
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from fastapi.responses import RedirectResponse
 import os
+from data.rag.chunker import SOURCES_DIR
+from data.rag.ingest import main as rebuild_rag_index
 from agents.orchestrator_agent import OrchestratorAgent
-from utils.token_tracker import get_summary, get_last_call_tokens, get_usage_by_client
+from utils.token_tracker import get_summary, get_last_call_tokens, get_usage_by_client, get_usage_over_time, get_cost_summary, get_price_config, set_price_config
 from utils.settings import is_debug_enabled, set_debug
 from utils.client_memory import (
     get_client_memory, save_client_turn, check_quota,
     add_client_tokens, set_client_plan, get_all_clients,
     clear_client_history, get_memory_enabled, set_memory_enabled,
     upsert_client_profile, get_client_detail, get_all_client_profiles,
+    reset_client_quota,
 )
 from utils.client_memory import get_usage_by_user_agent
 from utils.session_store import get_or_create_db_session
@@ -108,7 +113,9 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
-
+    
+class ResetQuotaRequest(BaseModel):
+    client_email: str
 
 @app.post("/api/auth/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest):
@@ -211,7 +218,15 @@ def google_oauth_disconnect(current_user: dict = Depends(get_current_user)):
     google_oauth.disconnect_google(current_user["id"])
     return {"message": "Google account disconnected."}
 
-
+@app.post("/api/admin/reset_quota")
+def admin_reset_quota(payload: ResetQuotaRequest, _admin: dict = Depends(require_admin)):
+    """
+    Réinitialise le compteur de tokens d'un client à 0 (comme un nouveau
+    cycle mensuel) — n'efface RIEN dans token_usage ni dans
+    conversation_history. Voir client_memory.reset_client_quota().
+    """
+    reset_client_quota(payload.client_email)
+    return {"status": "ok", "client_email": payload.client_email}
 # =========================================================================
 # PER-USER AGENTS — Email & Planning, using each user's own connected
 # Google account instead of the shared dev token.
@@ -284,7 +299,61 @@ def admin_clients(_admin: dict = Depends(require_admin)):
         }
     return result
 ALL_AGENTS = ["CommercialAgent", "EmailAgent", "PlanningAgent", "ReplyAgent", "OrchestratorAgent"]
+# =========================================================================
+# RAG SOURCES — CRUD sur data/rag/sources/ + reindexation FAISS
+# =========================================================================
 
+@app.get("/api/admin/rag/sources")
+def admin_rag_list_sources(_admin: dict = Depends(require_admin)):
+    if not os.path.isdir(SOURCES_DIR):
+        return {"sources": []}
+    files = []
+    for name in sorted(os.listdir(SOURCES_DIR)):
+        if not name.endswith(".json"):
+            continue
+        path = os.path.join(SOURCES_DIR, name)
+        files.append({
+            "filename": name,
+            "size_bytes": os.path.getsize(path),
+            "modified_at": datetime.fromtimestamp(os.path.getmtime(path)).isoformat(),
+        })
+    return {"sources": files}
+
+
+@app.post("/api/admin/rag/sources")
+async def admin_rag_upload_source(file: UploadFile = File(...), _admin: dict = Depends(require_admin)):
+    if not file.filename.endswith(".json"):
+        raise HTTPException(status_code=400, detail="Seuls les fichiers .json sont acceptés.")
+
+    content = await file.read()
+    try:
+        json.loads(content)  # valide que c'est du JSON correct avant d'écrire quoi que ce soit
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"JSON invalide : {e}")
+
+    os.makedirs(SOURCES_DIR, exist_ok=True)
+    dest = os.path.join(SOURCES_DIR, file.filename)
+    with open(dest, "wb") as f:
+        f.write(content)
+    return {"filename": file.filename, "message": "Fichier enregistré. Pensez à relancer l'indexation."}
+
+
+@app.delete("/api/admin/rag/sources/{filename}")
+def admin_rag_delete_source(filename: str, _admin: dict = Depends(require_admin)):
+    path = os.path.join(SOURCES_DIR, filename)
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="Fichier introuvable.")
+    os.remove(path)
+    return {"filename": filename, "message": "Fichier supprimé. Pensez à relancer l'indexation."}
+
+
+@app.post("/api/admin/rag/reindex")
+def admin_rag_reindex(_admin: dict = Depends(require_admin)):
+    try:
+        rebuild_rag_index()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Échec de l'indexation : {e}")
+    return {"message": "Index RAG reconstruit avec succès."}
 
 @app.get("/api/admin/clients/{email}/detail")
 def admin_client_detail(email: str, _admin: dict = Depends(require_admin)):
@@ -324,6 +393,39 @@ def admin_tokens(_admin: dict = Depends(require_admin)):
         if agent not in summary["by_agent"]:
             summary["by_agent"][agent] = 0
     return summary
+
+
+@app.get("/api/admin/tokens/timeseries")
+def admin_tokens_timeseries(days: int = 30, _admin: dict = Depends(require_admin)):
+    """Usage journalier des tokens sur les `days` derniers jours (défaut 30),
+    pour alimenter un graphique d'évolution dans le temps."""
+    if days < 1 or days > 365:
+        raise HTTPException(status_code=400, detail="days doit être entre 1 et 365.")
+    return {"days": days, "series": get_usage_over_time(days=days)}
+
+
+@app.get("/api/admin/tokens/cost")
+def admin_tokens_cost(_admin: dict = Depends(require_admin)):
+    """Coût estimé de l'usage de tokens, basé sur TOKEN_PRICE_PER_1K
+    (0 par défaut avec un modèle local)."""
+    return get_cost_summary()
+
+
+@app.get("/api/admin/tokens/price")
+def admin_get_token_price(_admin: dict = Depends(require_admin)):
+    return get_price_config()
+
+
+class TokenPriceUpdate(BaseModel):
+    price_per_1k_tokens: float
+    currency: str = "€"
+
+
+@app.post("/api/admin/tokens/price")
+def admin_set_token_price(payload: TokenPriceUpdate, _admin: dict = Depends(require_admin)):
+    if payload.price_per_1k_tokens < 0:
+        raise HTTPException(status_code=400, detail="Le prix ne peut pas être négatif.")
+    return set_price_config(payload.price_per_1k_tokens, payload.currency)
 
 
 @app.get("/api/admin/usage_by_client")

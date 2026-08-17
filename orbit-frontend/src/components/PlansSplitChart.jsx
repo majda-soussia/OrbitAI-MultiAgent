@@ -1,6 +1,10 @@
 import { useMemo } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function PlansSplitChart({ clients }) {
+  const { isDark } = useTheme();
+  const styles = isDark ? darkStyles : lightStyles;
+
   const { standard, premium, total } = useMemo(() => {
     let standardCount = 0;
     let premiumCount = 0;
@@ -41,9 +45,14 @@ export default function PlansSplitChart({ clients }) {
   );
 }
 
-const styles = {
-  card: { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
-  cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#0f172a" },
-  rowLabel: { display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748b", marginBottom: 4 },
-  barTrack: { height: 8, background: "#eff6ff", borderRadius: 4, overflow: "hidden" },
-};
+function baseStyles({ cardBg, cardBorder, titleColor, mutedText, barTrackBg }) {
+  return {
+    card: { background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
+    cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: titleColor },
+    rowLabel: { display: "flex", justifyContent: "space-between", fontSize: 13, color: mutedText, marginBottom: 4 },
+    barTrack: { height: 8, background: barTrackBg, borderRadius: 4, overflow: "hidden" },
+  };
+}
+
+const lightStyles = baseStyles({ cardBg: "#fff", cardBorder: "#e2e8f0", titleColor: "#0f172a", mutedText: "#64748b", barTrackBg: "#eff6ff" });
+const darkStyles = baseStyles({ cardBg: "#0d1119", cardBorder: "#232b40", titleColor: "#e8eaf0", mutedText: "#8b93a7", barTrackBg: "#151b2b" });

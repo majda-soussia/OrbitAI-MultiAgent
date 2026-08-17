@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const BUCKETS = [
   { label: "0-10", min: 0, max: 10 },
@@ -7,6 +8,9 @@ const BUCKETS = [
 ];
 
 export default function MachineDistributionChart({ clients }) {
+  const { isDark } = useTheme();
+  const styles = isDark ? darkStyles : lightStyles;
+
   const { counts, unknown } = useMemo(() => {
     const bucketCounts = BUCKETS.map(() => 0);
     let unknownCount = 0;
@@ -47,7 +51,7 @@ export default function MachineDistributionChart({ clients }) {
         ))}
       </div>
       {unknown > 0 && (
-        <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 10 }}>
+        <p style={{ fontSize: 11, color: styles.mutedText, marginTop: 10 }}>
           {unknown} client{unknown !== 1 ? "s" : ""} with no machine count detected yet.
         </p>
       )}
@@ -55,10 +59,16 @@ export default function MachineDistributionChart({ clients }) {
   );
 }
 
-const styles = {
-  card: { background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
-  cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#0f172a" },
-  label: { width: 50, fontSize: 13, color: "#64748b" },
-  barTrack: { flex: 1, height: 8, background: "#eff6ff", borderRadius: 4, overflow: "hidden" },
-  value: { fontSize: 13, width: 30, textAlign: "right", color: "#0f172a" },
-};
+function baseStyles({ cardBg, cardBorder, titleColor, mutedText, barTrackBg }) {
+  return {
+    card: { background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 12, padding: "16px 20px", fontFamily: "system-ui, sans-serif" },
+    cardTitle: { margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: titleColor },
+    mutedText,
+    label: { width: 50, fontSize: 13, color: mutedText },
+    barTrack: { flex: 1, height: 8, background: barTrackBg, borderRadius: 4, overflow: "hidden" },
+    value: { fontSize: 13, width: 30, textAlign: "right", color: titleColor },
+  };
+}
+
+const lightStyles = baseStyles({ cardBg: "#fff", cardBorder: "#e2e8f0", titleColor: "#0f172a", mutedText: "#64748b", barTrackBg: "#eff6ff" });
+const darkStyles = baseStyles({ cardBg: "#0d1119", cardBorder: "#232b40", titleColor: "#e8eaf0", mutedText: "#8b93a7", barTrackBg: "#151b2b" });
