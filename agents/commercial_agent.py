@@ -2,6 +2,7 @@ from agents.base_agent import BaseAgent
 from utils.settings import is_debug_enabled
 from utils.token_policy import get_policy_for_plan
 import re
+import difflib
 
 ORBIT_JARGON_TERMS = [
     r"\bEMS\b", r"\bOEE\b", r"\bESG\b", r"\bSCADA\b", r"\bPLC\b", r"\bMES\b",
@@ -12,7 +13,16 @@ ORBIT_JARGON_TERMS = [
     r"\bJanitza\b", r"\bHuawei\b", r"\bAtlas\s?Copco\b", r"\bCircutor\b",
     r"\bCarlo\s?Gavazzi\b",
 ]
+# --- après ---
 ORBIT_JARGON_REGEX = re.compile("|".join(ORBIT_JARGON_TERMS), re.IGNORECASE)
+
+GREETING_CANONICAL_FORMS = [
+    "hi", "hii", "hello", "helo", "hey", "heyy",
+    "good morning", "goodmorning", "gm",
+    "bonjour", "bonjur", "salut", "salu",
+    "coucou", "cc",
+]
+
 HARD_OFF_TOPIC_PATTERNS = [
     r"\bexam(e|s|en)?\b",
     r"\bhomework\b",
@@ -150,7 +160,18 @@ def needs_specific_data(question: str) -> bool:
 def _filter_relevant(results: list, threshold: float = RAG_RELEVANCE_THRESHOLD) -> list:
     return [r for r in results if r["score"] >= threshold]
 
-
+def _is_greeting(message: str) -> bool:
+    """Comparaison floue contre une courte liste de salutations canoniques,
+    au lieu d'un regex qui doit anticiper chaque faute de frappe possible
+    une par une (fragile — ex: 'good morining' échappait au regex précédent
+    malgré un exemple explicite dans le prompt). Un seuil de similarité
+    couvre les fautes raisonnables sans avoir à les lister individuellement."""
+    normalized = re.sub(r"[^a-zà-ÿ\s]", "", message.strip().lower())
+    if not normalized or len(normalized) > 20:
+        # Trop long pour être juste une salutation — laisser le classifieur trancher.
+        return False
+    matches = difflib.get_close_matches(normalized, GREETING_CANONICAL_FORMS, n=1, cutoff=0.72)
+    return bool(matches)
 def get_rag_context(question: str, top_k: int = 5) -> str:
     from data.rag.retriever import retrieve, build_context_block
 
@@ -189,12 +210,14 @@ class CommercialAgent(BaseAgent):
         return bool(HARD_OFF_TOPIC_REGEX.search(message))
 
     def _is_in_scope(self, user_message: str, history: list) -> bool:
+        if _is_greeting(user_message):
+            return True
+
         if self._matches_jargon_allowlist(user_message):
             return True
 
         if self._matches_hard_blocklist(user_message):
             return False
-
         # On inclut la DERNIÈRE question de l'assistant, pas seulement
         # l'historique utilisateur : sans elle, une réponse courte comme
         # "8 factories" ou "500 sensors" n'a aucun contexte pour être
@@ -288,7 +311,17 @@ class CommercialAgent(BaseAgent):
         if not history:
             return []
         return history[-max_messages:]
-
+    GREETING_REINFORCEMENT = (
+        "[SYSTEM NOTE: This is the customer's opening greeting, first message of the "
+        "conversation. Before your qualifying question, add ONE short sentence introducing "
+        "Orbit Engineering Solutions (Industrial AI Platform — Energy Management, Industry 4.0). "
+        "Do not skip this introduction, even if it feels redundant with the system prompt.\n"
+        "CRITICAL: The customer has given NO information yet about their country, sector, or "
+        "industry. 'Based in Tunisia' describes ORBIT's location, not the customer's — never "
+        "say or imply the customer is in Tunisia, or in telecom, or in any specific sector, "
+        "unless they explicitly say so. Ask generically, e.g. 'How can we help — are you looking "
+        "to optimize energy usage, monitor multiple sites, or something else?']\n\n"
+    )
     def run(self, user_message: str, history: list = None, plan: str = "standard") -> str:
         policy = get_policy_for_plan(plan)
         history = self._trim_history(history, max_messages=policy["max_history_messages"])
@@ -312,16 +345,20 @@ class CommercialAgent(BaseAgent):
             # d'invention de specs/prix) — message explicite + transfert
             # humain à la place.
             return NO_SPECIFIC_INFO_FALLBACK
-
+        is_opening_greeting = (
+            not history and _is_greeting(user_message)
+        )
         augmented_message = (
             f"{rag_context}\n\nCustomer question: {user_message}"
             if rag_context else user_message
         )
-
+        if is_opening_greeting:
+            augmented_message = self.GREETING_REINFORCEMENT + augmented_message
         raw_text = self.call_llm(
             augmented_message,
-            extra_messages=history
+            extra_messages=history 
         )
+        
 
         return self._strip_letter_artifacts(self.clean_text_response(raw_text))
     def extract_profile_info(self, user_message: str) -> dict:

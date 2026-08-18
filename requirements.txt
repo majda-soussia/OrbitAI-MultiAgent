@@ -1,10 +1,19 @@
-pip install ollama langchain langchain-community pyyaml requests python-dotenv
-pip install tokenizers huggingface_hub --break-system-packages
-pip install pytest
-python -m pip install faiss-cpu
-ollama pull nomic-embed-text
-pip install argon2-cffi python-jose[cryptography] psycopg2-binary python-dotenv --break-system-packages
-pip install python-multipart --break-system-packages
-pip install cryptography --break-system-packages
-pip install google-auth-oauthlib google-auth-httplib2 --break-system-packages
-ollama pull bge-m3
+fastapi
+uvicorn[standard]
+pydantic
+ollama
+langchain
+langchain-community
+pyyaml
+requests
+python-dotenv
+tokenizers
+huggingface_hub
+argon2-cffi
+python-jose[cryptography]
+psycopg2-binary
+python-multipart
+cryptography
+google-auth-oauthlib
+google-auth-httplib2
+faiss-cpu
